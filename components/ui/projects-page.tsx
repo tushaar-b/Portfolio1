@@ -46,7 +46,7 @@ const projects = [
     title: "Aarthi AI — Financial Planner & Stock Prediction Platform",
     date: "May 2026",
     tags: ["Python", "FastAPI", "LSTM", "FinBERT", "Three.js", "Chart.js", "GSAP", "yfinance"],
-    image: null as string | null,
+    image: "/assets/aarthi-3.png",
     bullets: [
       "Built an AI-powered financial planning SPA combining empathy-driven UX with a multi-layered ML engine — using LSTM for 5-day stock trajectory prediction and FinBERT for real-time news sentiment analysis to override technical forecasts during breaking events.",
       "Engineered a FastAPI backend computing RSI, MACD, Bollinger Bands, and ATR as a deterministic scoring layer grounding AI predictions in market physics; integrated Google Gemini to translate raw indicators into human-readable, empathetic advice.",
