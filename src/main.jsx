@@ -6,7 +6,6 @@ import Lenis from 'lenis';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { DemoOne } from '../components/ui/demo.tsx';
-import { SvgFollowScroll } from '../components/ui/svg-follow-scroll.tsx';
 import { FlipCardsSection } from '../components/ui/flip-cards.tsx';
 import { TechStackSection } from '../components/ui/tech-stack.tsx';
 import { ProjectsSection } from '../components/ui/projects-section.tsx';
@@ -20,16 +19,6 @@ if (journeyRoot) {
   ReactDOM.createRoot(journeyRoot).render(
     <React.StrictMode>
       <DemoOne />
-    </React.StrictMode>
-  );
-}
-
-// ─── Render SVG Scroll Follow Path ───────────────────────────────────────────
-const svgScrollRoot = document.getElementById('svg-scroll-root');
-if (svgScrollRoot) {
-  ReactDOM.createRoot(svgScrollRoot).render(
-    <React.StrictMode>
-      <SvgFollowScroll />
     </React.StrictMode>
   );
 }
@@ -370,142 +359,7 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ─── Neural Background Flow Field for About Section ───────────────────────────
-const initNeuralBackground = (canvasId = 'shader-canvas') => {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
 
-  const ctx = canvas.getContext('2d');
-  const numNodes = 100;
-  const color = '#111111'; // Dark gray/black for light theme
-  const trailOpacity = 0.1;
-  const particleCount = 600;
-  const speed = 0.8;
-
-  let width = window.innerWidth;
-  let height = window.innerHeight;
-  let particles = [];
-  let animationFrameId;
-  let mouse = { x: -1000, y: -1000 };
-
-  class Particle {
-    constructor() {
-      this.x = Math.random() * width;
-      this.y = Math.random() * height;
-      this.vx = 0;
-      this.vy = 0;
-      this.age = 0;
-      this.life = Math.random() * 200 + 100;
-    }
-
-    update() {
-      const angle = (Math.cos(this.x * 0.005) + Math.sin(this.y * 0.005)) * Math.PI;
-      
-      this.vx += Math.cos(angle) * 0.2 * speed;
-      this.vy += Math.sin(angle) * 0.2 * speed;
-
-      const dx = mouse.x - this.x;
-      const dy = mouse.y - this.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const interactionRadius = 150;
-
-      if (distance < interactionRadius) {
-        const force = (interactionRadius - distance) / interactionRadius;
-        this.vx -= dx * force * 0.05;
-        this.vy -= dy * force * 0.05;
-      }
-
-      this.x += this.vx;
-      this.y += this.vy;
-      this.vx *= 0.95;
-      this.vy *= 0.95;
-
-      this.age++;
-      if (this.age > this.life) {
-        this.reset();
-      }
-
-      if (this.x < 0) this.x = width;
-      if (this.x > width) this.x = 0;
-      if (this.y < 0) this.y = height;
-      if (this.y > height) this.y = 0;
-    }
-
-    reset() {
-      this.x = Math.random() * width;
-      this.y = Math.random() * height;
-      this.vx = 0;
-      this.vy = 0;
-      this.age = 0;
-      this.life = Math.random() * 200 + 100;
-    }
-
-    draw(context) {
-      context.fillStyle = color;
-      const alpha = 1 - Math.abs((this.age / this.life) - 0.5) * 2;
-      context.globalAlpha = alpha * 0.15; // Darker lines
-      context.strokeStyle = color;
-      context.fillRect(this.x, this.y, 1.5, 1.5);
-    }
-  }
-
-  const init = () => {
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.scale(dpr, dpr);
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-
-    particles = [];
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle());
-    }
-  };
-
-  const animate = () => {
-    // Fade out existing pixels towards transparent to create trails without making the canvas opaque black
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.fillStyle = `rgba(0, 0, 0, ${trailOpacity})`;
-    ctx.fillRect(0, 0, width, height);
-
-    // Reset to normal drawing for particles
-    ctx.globalCompositeOperation = 'source-over';
-
-    particles.forEach((p) => {
-      p.update();
-      p.draw(ctx);
-    });
-
-    animationFrameId = requestAnimationFrame(animate);
-  };
-
-  const handleResize = () => {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    init();
-  };
-
-  const handleMouseMove = (e) => {
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
-  };
-
-  const handleMouseLeave = () => {
-    mouse.x = -1000;
-    mouse.y = -1000;
-  };
-
-  init();
-  animate();
-
-  window.addEventListener('resize', handleResize);
-  canvas.addEventListener('mousemove', handleMouseMove);
-  canvas.addEventListener('mouseleave', handleMouseLeave);
-};
-
-initNeuralBackground('shader-canvas');
 
 // ─── Interactive Particle Text — Manifesto Section ──────────────────────────
 const initManifestoParticles = () => {

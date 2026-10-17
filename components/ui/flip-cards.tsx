@@ -178,7 +178,7 @@ const FlipCardsSection = () => {
       front: <FrontLabel label="B.Tech CSE (Data Science)" sub="Higher Education" />,
       back: (
         <BackContent accent="#F69C40">
-          <Stat value="9.3" accent="#F69C40" />
+          <Stat value="9.4" accent="#F69C40" />
           <StatLabel value="CGPA · VIT Vellore" />
         </BackContent>
       ),
@@ -199,13 +199,13 @@ const FlipCardsSection = () => {
   return (
     <section style={{
       width: "100%",
-      minHeight: "100vh",
+      minHeight: "auto",
       background: "transparent",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      padding: "2vh 5vw 10vh",
+      padding: "2vh 5vw 12vh",
     }}>
       {/* Cards grid */}
       <div style={{
