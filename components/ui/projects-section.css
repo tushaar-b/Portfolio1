@@ -21,6 +21,7 @@
 .projects-folder-front{position:absolute;bottom:0;left:0;width:100%;height:85%;transform-origin:bottom center}
 .projects-folder-tag{position:absolute;top:12%;left:6%;padding:2% 6%;border:1.5px solid var(--ride-road);border-radius:999px;background:#F1EEE6;color:var(--ride-road);font:600 clamp(.6rem,1.2vw,.9rem)/1.4 var(--about-body);font-variant-caps:small-caps;letter-spacing:.1em}
 .projects-folder-glow{position:absolute;z-index:-1;left:-110%;top:-158%;width:320%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,var(--ride-amber),transparent 68%);opacity:.18;pointer-events:none;animation:projects-lantern 4s ease-in-out infinite alternate}
+.projects-word{content-visibility:auto;contain-intrinsic-size:auto 220px}
 @keyframes projects-lantern{from{transform:scale(1)}to{transform:scale(1.06)}}
 @keyframes projects-cloud-drift{from{transform:translateX(-35px)}to{transform:translateX(75px)}}
 @media(max-width:639px){.projects-stars-extra,.projects-night-clouds{display:none}.projects-folder-glow{left:-80%;top:-119%;width:260%}}

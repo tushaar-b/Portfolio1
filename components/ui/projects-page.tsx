@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef, useId, useCallback } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef, useId, useCallback } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { NightStars, NightCloud, NightHills, NightLamp, NightRoad, NightFinish } from './night-scenery';
 import './projects-page.css';
+import { ProjectImage } from './project-image';
 
 // ── Project Data ─────────────────────────────────────────────────────────────
 const projects = [
@@ -67,6 +68,8 @@ const BackArrow = () => (
 // ── Image Slideshow Component ────────────────────────────────────────────────
 const ImageSlideshow = ({ images, title }: { images: string[], title: string }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [visited, setVisited] = useState(() => new Set([0]));
+  useEffect(() => { setVisited(previous => new Set([...previous, currentIndex])); }, [currentIndex]);
 
   return (
     <div className="detail-carousel" style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
@@ -81,7 +84,7 @@ const ImageSlideshow = ({ images, title }: { images: string[], title: string }) 
             pointerEvents: idx === currentIndex ? "auto" : "none",
           }}
         >
-          <img src={img} alt={`${title} ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          {(idx === currentIndex || visited.has(idx)) && <ProjectImage src={img} alt={`${title} ${idx + 1}`} eager={idx === 0}/>}
         </div>
       ))}
       
@@ -158,8 +161,8 @@ export const ProjectsPage: React.FC = () => {
     window.dispatchEvent(new CustomEvent('close-projects-page'));
   }, []);
 
-  // The existing overlay gets a history entry so browser Back returns to its folder.
-  useEffect(() => {
+  // Register before the lazy chunk signals that it can receive the opening event.
+  useLayoutEffect(() => {
     const showPage = () => {
       sessionStorage.setItem('returnTo', 'projects');
       setVisible(true);
@@ -191,8 +194,9 @@ export const ProjectsPage: React.FC = () => {
       }
     };
     window.addEventListener("open-projects-page", handler);
+    window.addEventListener('projects-page-ready', handler);
     window.addEventListener('popstate', pop);
-    return () => { window.removeEventListener("open-projects-page", handler); window.removeEventListener('popstate', pop); };
+    return () => { window.removeEventListener("open-projects-page", handler); window.removeEventListener('projects-page-ready', handler); window.removeEventListener('popstate', pop); };
   }, [handleBack]);
 
   if (!visible) return null;
@@ -322,7 +326,7 @@ export const ProjectsPage: React.FC = () => {
               {(project as any).images && (project as any).images.length > 0 ? (
                 <ImageSlideshow images={(project as any).images} title={project.title} />
               ) : project.image ? (
-                <img src={project.image} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <ProjectImage src={project.image} alt={project.title} priority={i === 0}/>
               ) : (
                 <>
                   {/* Placeholder gradient shimmer */}

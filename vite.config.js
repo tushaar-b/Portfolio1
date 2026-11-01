@@ -13,4 +13,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, '.'),
     },
   },
+  build: {
+    minify: 'esbuild',
+    cssCodeSplit: true,
+    modulePreload: { resolveDependencies: (filename, dependencies, context) => context.hostType === 'html' ? dependencies : [] },
+    rollupOptions: { treeshake: true },
+  },
 });

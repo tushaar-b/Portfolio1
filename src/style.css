@@ -93,7 +93,7 @@ body {
 /* ── UI Overlay Wrapper ─────────────────────────────────────── */
 .ui {
   position: relative;
-  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
 }
@@ -337,14 +337,14 @@ body {
 .hero-section {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: 100svh;
   overflow: hidden;
 }
 
 .manifesto-section {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: 100svh;
   z-index: 10; /* Important: this sits above the canvas to 'push' it away */
   overflow: hidden;
   display: flex;
@@ -368,7 +368,7 @@ body {
 .about-details-section {
   position: relative;
   width: 100vw;
-  min-height: 100vh;
+  min-height: 100svh;
   z-index: 10;
   overflow: hidden;
   display: flex;
@@ -938,7 +938,7 @@ body {
 .projects-section {
   position: relative;
   width: 100vw;
-  min-height: 100vh;
+  min-height: 100svh;
   z-index: 10;
   background: transparent;
 }
@@ -1180,7 +1180,7 @@ body {
 /* Scroll journey: the original hero remains the pinned viewport. */
 :root { --journey-length:500vh; }
 .journey { height:var(--journey-length); position:relative; overflow-anchor:none; }
-.journey .stage { height:100vh; min-height:0; }
+.journey .stage { height:100svh; min-height:0; }
 .journey-camera { position:absolute; inset:0; z-index:2; pointer-events:none; }
 .journey-camera .character-stage { overflow:visible; }
 .journey-camera .waving-character { overflow:visible; }
@@ -1202,7 +1202,7 @@ body {
 .next-content > a:hover .cta-arrow, .next-cta:hover .cta-arrow { transform:translateY(4px); }
 .journey .film-overlay { z-index:20; }
 @media(max-width:639px) { :root { --journey-length:400vh; } .tech-tile { width:64px; height:64px; } .tech-tile span { border-radius:15px; font-size:18px; } .next-content h2 { font-size:clamp(34px,8.5vw,54px); } }
-@media(prefers-reduced-motion:reduce) { .journey { height:auto; } .journey .stage { height:200vh; overflow:hidden; } .journey-camera { height:100vh; will-change:auto; } .journey .next-screen { top:100vh; height:100vh; opacity:1; } .journey .film-overlay { position:absolute; } .journey .hero-name,.journey .hero-subtitle,.journey .hero-nav { max-height:100vh; } }
+@media(prefers-reduced-motion:reduce) { .journey { height:auto; } .journey .stage { height:200svh; overflow:hidden; } .journey-camera { height:100svh; will-change:auto; } .journey .next-screen { top:100svh; height:100svh; opacity:1; } .journey .film-overlay { position:absolute; } .journey .hero-name,.journey .hero-subtitle,.journey .hero-nav { max-height:100svh; } }
 
 .journey-anchor { position:absolute; top:36%; left:0; width:1px; height:1px; pointer-events:none; }
 @media(max-width:639px) { .journey-anchor { top:33.75%; } }
@@ -1228,7 +1228,7 @@ body {
   --text:#231734;
   --label:#E85A1D;
   --screen-rule:#231734;
-  min-height:100vh;
+  min-height:100svh;
   inset:-2px;
   border-radius:0;
   background-color:var(--bg);
@@ -1264,7 +1264,7 @@ body:has(.stage[data-arrival="true"]) #scroll-progress { background:#C2610F; }
   --avatar-right:calc(clamp(16px,2.5vw,40px) + env(safe-area-inset-right,0px));
   --avatar-bottom:calc(clamp(16px,2.5vw,40px) + env(safe-area-inset-bottom,0px));
 }
-.avatar-dock-target { position:absolute; width:var(--avatar-size); height:var(--avatar-size); right:var(--avatar-right); top:calc(100vh - var(--avatar-bottom) - var(--avatar-size)); visibility:hidden; pointer-events:none; }
+.avatar-dock-target { position:absolute; width:var(--avatar-size); height:var(--avatar-size); right:var(--avatar-right); top:calc(100svh - var(--avatar-bottom) - var(--avatar-size)); visibility:hidden; pointer-events:none; }
 #avatar-badge { position:fixed; left:50%; top:50%; width:280px; height:280px; z-index:15; padding:0; border:0; border-radius:50%; background:transparent; color:var(--ink); opacity:0; transform:translate(-50%,-50%) scale(0); cursor:pointer; -webkit-tap-highlight-color:transparent; }
 #avatar-badge:disabled { pointer-events:none; }
 .avatar-hover,.avatar-motion,.avatar-settle,.avatar-face { display:block; position:relative; width:100%; height:100%; border-radius:50%; }
@@ -1285,7 +1285,7 @@ body:has(.stage[data-arrival="true"]) #scroll-progress { background:#C2610F; }
 /* One permanent film layer: CSS sticky follows the pin range, with no DOM
    reparenting, ticker measurements, or callback-dependent inline transforms. */
 #film-root { position:absolute; inset:0 0 auto; height:var(--journey-length); z-index:20; pointer-events:none; --film-strength:calc(var(--film-intensity) * var(--film-level,.6) / .6); }
-#film-root .film-overlay { position:sticky; top:0; height:100vh; width:100%; border-radius:24px; }
+#film-root .film-overlay { position:sticky; top:0; height:100svh; width:100%; border-radius:24px; }
 #film-root[data-arrival="true"] .film-overlay { border-radius:0; }
 #film-root[data-arrival="true"] .film-haze { background:color-mix(in srgb,var(--arrival-text) 8%,transparent); }
 #film-root .film-particles:empty { animation:none; opacity:0; }
@@ -1293,7 +1293,7 @@ body:has(.stage[data-arrival="true"]) #scroll-progress { background:#C2610F; }
 .journey .stage.film-stage { filter:none; }
 .journey-scene { position:absolute; inset:0; z-index:1; background:var(--hero-bg); filter:saturate(calc(1 - .08 * var(--film-strength))) contrast(calc(1 + .03 * var(--film-strength))) sepia(calc(.06 * var(--film-strength))); }
 .journey .hero-name,.journey .character-stage { will-change:auto; }
-@media(prefers-reduced-motion:reduce) { #film-root { height:200vh; } .journey-scene { filter:none; } }
+@media(prefers-reduced-motion:reduce) { #film-root { height:200svh; } .journey-scene { filter:none; } }
 /* Dev-only deterministic captures freeze idle texture, never the scroll clock. */
 html[data-journey-idle-frozen="true"] :is(.journey,#film-root) *,
 html[data-journey-idle-frozen="true"] :is(.journey,#film-root) *::before,
@@ -1306,7 +1306,7 @@ html[data-journey-idle-frozen="true"] :is(.journey,#film-root) *::after { animat
 /* Keep the arrival inside the one pinned viewport until release. */
 .journey { z-index:3; }
 .journey .stage { min-height:100dvh; }
-.journey .next-screen { height:100vh; min-height:100dvh; box-sizing:border-box; }
+.journey .next-screen { height:100svh; min-height:100dvh; box-sizing:border-box; }
 
 @media(min-width:1024px) { .hero-section { --portrait-size:min(94svh,60vw); --character-drop:22svh; } }
 

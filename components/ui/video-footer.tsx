@@ -11,6 +11,31 @@ export const VideoFooter = () => {
   const inView = useInView(ref, { once: true, amount: .3 });
   const reduced = !!useReducedMotion();
   const [copied, setCopied] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [nearby, setNearby] = useState(false);
+  const poster = '/assets/footer-poster.webp';
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setNearby(true); observer.disconnect(); }
+    }, { rootMargin: '100% 0px' });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!nearby || !canvasRef.current) return;
+    const device = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
+    const lite = new URLSearchParams(location.search).get('lite') === '1' || device.connection?.saveData || ((device.deviceMemory ?? 8) <= 2) || ((device.hardwareConcurrency || 8) <= 2);
+    let cancelled = false;
+    let dispose: (() => void) | undefined;
+    if (!lite) import('./footer-scene.js').then(({ initFooter3D }) => {
+      if (cancelled || !canvasRef.current) return;
+      dispose = initFooter3D(canvasRef.current, () => {
+        if (cancelled || !canvasRef.current) return;
+        setSceneReady(true);
+      });
+    }).catch(() => { /* The poster remains available when WebGL is unavailable. */ });
+    return () => { cancelled = true; dispose?.(); };
+  }, [nearby]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   const copyEmail = async (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -32,7 +57,8 @@ export const VideoFooter = () => {
       initial={reduced ? false : { opacity: 0, scale: .96 }} animate={shown ? { opacity: 1, scale: 1 } : { opacity: 0, scale: .96 }}
       transition={{ duration: reduced ? 0 : .8, delay: reduced ? 0 : 1, ease: [0.215, .61, .355, 1] }}
       onAnimationComplete={() => { if (shown && canvasRef.current) canvasRef.current.dataset.monitor = 'on'; }}>
-      <canvas ref={canvasRef} id="footer-canvas" data-reduced-motion={String(reduced)} />
+      {nearby && <img className={`footer-poster${sceneReady ? ' is-hidden' : ''}`} src={poster} srcSet="/assets/footer-poster-600.webp 600w, /assets/footer-poster.webp 1200w" sizes="(max-width: 639px) 100vw, 72vw" alt="" width="1200" height="756" loading="lazy" decoding="async"/>}
+      <canvas ref={canvasRef} id="footer-canvas" className={sceneReady ? 'is-ready' : ''} data-reduced-motion={String(reduced)} />
     </motion.div>
     <div className="footer-made"><span className="footer-made-label">Website made using:</span>{['React', 'Vite', 'Framer Motion', 'Three.js', 'Lenis Scroll'].map(item => <span className="footer-made-item" key={item}>{item}</span>)}</div>
     <nav className="footer-socials" aria-label="Footer social links">{socials.map(social => <a key={social.id} href={social.href}
