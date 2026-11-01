@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState, useRef, useId, useCallback } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { NightStars, NightCloud, NightHills, NightLamp, NightRoad, NightFinish } from './night-scenery';
+import './projects-page.css';
 
 // ── Project Data ─────────────────────────────────────────────────────────────
 const projects = [
@@ -67,7 +69,7 @@ const ImageSlideshow = ({ images, title }: { images: string[], title: string }) 
   const [currentIndex, setCurrentIndex] = useState(0);
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
+    <div className="detail-carousel" style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
       {images.map((img, idx) => (
         <div
           key={idx}
@@ -107,6 +109,7 @@ const ImageSlideshow = ({ images, title }: { images: string[], title: string }) 
           <div
             key={idx}
             onClick={() => setCurrentIndex(idx)}
+            className={`detail-carousel-dot${idx === currentIndex ? ' is-active' : ''}`}
             style={{
               width: "6px", height: "6px", borderRadius: "50%",
               background: idx === currentIndex ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.4)",
@@ -123,10 +126,42 @@ const ImageSlideshow = ({ images, title }: { images: string[], title: string }) 
 // ── Main Component ───────────────────────────────────────────────────────────
 export const ProjectsPage: React.FC = () => {
   const [visible, setVisible] = useState(false);
-
-  // Listen for the custom event dispatched by the section icon click
+  const reduced = !!useReducedMotion();
+  const railRef = useRef<HTMLDivElement>(null);
+  const roadId = `detail-road-${useId().replace(/:/g, '')}`;
+  const rowReveal = {
+    hidden: { opacity: 0, y: 40 },
+    shown: { opacity: 1, y: 0, transition: { duration: reduced ? 0 : .6, ease: [0.215, 0.61, 0.355, 1] as [number, number, number, number] } },
+  };
   useEffect(() => {
-    const handler = () => {
+    if (!visible) return;
+    const root = document.getElementById('projects-page-root');
+    if (!root) return;
+    const update = () => {
+      const progress = reduced ? 1 : root.scrollTop / Math.max(1, root.scrollHeight - root.clientHeight);
+      if (railRef.current) railRef.current.style.transform = `scaleY(${Math.min(1, Math.max(0, progress))})`;
+    };
+    const resize = new ResizeObserver(update);
+    resize.observe(root); if (root.firstElementChild) resize.observe(root.firstElementChild);
+    root.addEventListener('scroll', update, { passive: true }); update();
+    return () => { root.removeEventListener('scroll', update); resize.disconnect(); };
+  }, [visible, reduced]);
+
+  const handleBack = useCallback(() => {
+    history.scrollRestoration = 'manual';
+    history.replaceState({ ...history.state, projectsDetail: false }, '', '/#projects');
+    setVisible(false);
+    const root = document.getElementById('projects-page-root');
+    if (root) root.style.display = 'none';
+    const app = document.getElementById('app');
+    if (app) { app.style.opacity = '0'; app.style.display = ''; }
+    window.dispatchEvent(new CustomEvent('close-projects-page'));
+  }, []);
+
+  // The existing overlay gets a history entry so browser Back returns to its folder.
+  useEffect(() => {
+    const showPage = () => {
+      sessionStorage.setItem('returnTo', 'projects');
       setVisible(true);
       // Scroll projects page back to top every time it opens
       const root = document.getElementById("projects-page-root");
@@ -140,27 +175,40 @@ export const ProjectsPage: React.FC = () => {
       const app = document.getElementById("app");
       if (app) app.style.display = "none";
     };
+    const handler = () => {
+      history.scrollRestoration = 'manual';
+      history.replaceState({ ...history.state, projectsDetail: false }, '', '/#projects');
+      history.pushState({ ...history.state, projectsDetail: true }, '', '/#project-details');
+      showPage();
+    };
+    const pop = () => {
+      if (history.state?.projectsDetail && location.hash === '#project-details') {
+        showPage();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+      } else if (document.getElementById('projects-page-root')?.style.display === 'block') {
+        handleBack();
+      }
+    };
     window.addEventListener("open-projects-page", handler);
-    return () => window.removeEventListener("open-projects-page", handler);
-  }, []);
-
-  const handleBack = () => {
-    setVisible(false);
-    const root = document.getElementById("projects-page-root");
-    if (root) root.style.display = "none";
-    const app = document.getElementById("app");
-    if (app) app.style.display = "";
-    window.dispatchEvent(new CustomEvent("close-projects-page"));
-  };
+    window.addEventListener('popstate', pop);
+    return () => { window.removeEventListener("open-projects-page", handler); window.removeEventListener('popstate', pop); };
+  }, [handleBack]);
 
   if (!visible) return null;
 
   return (
-    <div data-lenis-prevent style={{ minHeight: "100vh", background: "var(--bg-hero)", color: "var(--color-primary)" }}>
+    <div data-lenis-prevent className="projects-detail night-scene">
+      <div className="detail-night-scenery" aria-hidden="true">
+        <svg className="detail-stars"><NightStars count={30} twinkle/></svg>
+        <svg className="detail-clouds"><NightCloud className="detail-cloud" x="8%" y="23%" width="180" height="60"/><NightCloud className="detail-cloud detail-cloud-second" x="76%" y="52%" width="180" height="60"/></svg>
+      </div>
+      <div className="detail-film"><NightFinish/></div>
 
       {/* ── Sticky top nav ── */}
       <motion.nav
-        initial={{ opacity: 0, y: -20 }}
+        className="detail-nav"
+        initial={reduced ? false : { opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         style={{
@@ -179,6 +227,7 @@ export const ProjectsPage: React.FC = () => {
         {/* Back button */}
         <button
           onClick={handleBack}
+          className="detail-back-top"
           style={{
             display: "flex",
             alignItems: "center",
@@ -214,9 +263,10 @@ export const ProjectsPage: React.FC = () => {
       </motion.nav>
 
       {/* ── Page heading ── */}
-      <div style={{ padding: "6rem 5vw 3rem", maxWidth: "1200px", margin: "0 auto" }}>
+      <div className="detail-heading" style={{ padding: "6rem 5vw 3rem", maxWidth: "1200px", margin: "0 auto" }}>
+        <span className="detail-amber-dash" aria-hidden="true"/>
         <motion.p
-          initial={{ opacity: 0, y: 16 }}
+          initial={reduced ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           style={{ fontFamily: "'Outfit', sans-serif", fontSize: "0.78rem", letterSpacing: "0.2em", color: "var(--color-secondary)", textTransform: "uppercase", marginBottom: "1.2rem" }}
@@ -224,7 +274,7 @@ export const ProjectsPage: React.FC = () => {
           {projects.length} Projects
         </motion.p>
         <motion.h1
-          initial={{ opacity: 0, y: 30 }}
+          initial={reduced ? false : { opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(2.4rem, 5vw, 4.5rem)", fontWeight: 800, fontStyle: "normal", color: "var(--color-primary)", lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "5rem" }}
@@ -234,13 +284,15 @@ export const ProjectsPage: React.FC = () => {
       </div>
 
       {/* ── Projects list ── */}
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 5vw 10rem" }}>
+      <div className="detail-list" style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 5vw 10rem" }}>
+        <div className="detail-rail" aria-hidden="true"><div ref={railRef} className="detail-rail-fill"/></div>
         {projects.map((project, i) => (
           <motion.article
             key={project.id}
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.15, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+            className="detail-row"
+            initial={reduced ? false : 'hidden'}
+            whileInView="shown"
+            viewport={{ once: true, amount: .25 }}
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
@@ -251,7 +303,8 @@ export const ProjectsPage: React.FC = () => {
             }}
           >
             {/* Image */}
-            <div
+            <motion.div className="detail-image-reveal" variants={rowReveal}>
+            <div className="detail-image"
               style={{
                 direction: "ltr",
                 width: "100%",
@@ -293,13 +346,12 @@ export const ProjectsPage: React.FC = () => {
                 </>
               )}
               {/* Corner lines */}
-              <div style={{ position: "absolute", top: 0, left: 0, width: 36, height: 36, borderTop: "1.5px solid rgba(0,0,0,0.18)", borderLeft: "1.5px solid rgba(0,0,0,0.18)", borderRadius: "20px 0 0 0", pointerEvents: "none" }} />
-              <div style={{ position: "absolute", bottom: 0, right: 0, width: 36, height: 36, borderBottom: "1.5px solid rgba(0,0,0,0.18)", borderRight: "1.5px solid rgba(0,0,0,0.18)", borderRadius: "0 0 20px 0", pointerEvents: "none" }} />
             </div>
+            </motion.div>
 
             {/* Content */}
-            <div style={{ direction: "ltr" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
+            <motion.div className="detail-content" style={{ direction: "ltr" }} variants={{hidden:rowReveal.hidden,shown:{...rowReveal.shown,transition:{...rowReveal.shown.transition,delay:reduced?0:.1}}}}>
+              <div className="detail-meta" data-number={String(project.id).padStart(2,'0')} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
                 <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: "0.72rem", letterSpacing: "0.18em", color: "var(--color-secondary)", textTransform: "uppercase" }}>
                   Project 0{project.id}
                 </span>
@@ -312,7 +364,7 @@ export const ProjectsPage: React.FC = () => {
                 {project.title}
               </h2>
 
-              <div style={{ width: "36px", height: "1.5px", background: "rgba(0,0,0,0.2)", borderRadius: "2px", marginBottom: "1.6rem" }} />
+              <div className="detail-amber-dash" style={{ marginBottom: "1.6rem" }} />
 
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {project.bullets.map((b, bi) => (
@@ -324,7 +376,7 @@ export const ProjectsPage: React.FC = () => {
               </ul>
 
               {/* Tags */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
+              <div className="detail-tags" style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
                 {project.tags.map(tag => (
                   <span key={tag} style={{
                     fontFamily: "'Outfit', sans-serif",
@@ -341,15 +393,21 @@ export const ProjectsPage: React.FC = () => {
                   </span>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </motion.article>
         ))}
       </div>
 
       {/* ── Bottom back button ── */}
-      <div style={{ textAlign: "center", paddingBottom: "6rem" }}>
+      <div className="detail-ending">
+        <div className="detail-horizon" aria-hidden="true">
+          <svg className="detail-hills" viewBox="0 0 1440 200" preserveAspectRatio="none"><NightHills d="M0 90C160 20 320 150 520 80S830 10 1050 90S1310 40 1440 65V200H0Z"/></svg>
+          <div className="detail-lamp"><div className="detail-lamp-glow"/><svg viewBox="-5 -180 80 180"><NightLamp/></svg></div>
+          <svg className="detail-road" viewBox="0 0 1440 100" preserveAspectRatio="none"><defs><path id={roadId} d="M0 50H1440"/></defs><NightRoad href={`#${roadId}`}/></svg>
+        </div>
         <button
           onClick={handleBack}
+          className="detail-back-bottom"
           style={{
             display: "inline-flex",
             alignItems: "center",

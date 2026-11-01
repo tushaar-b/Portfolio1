@@ -1,0 +1,28 @@
+#tech-stack.tech-stack-section,#tech-stack-root{margin:0;padding:0;border:0;border-radius:0;background:var(--about-ink)}
+.tech-night{--cargo-road-height:17%;position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;width:100%;height:100dvh;min-height:780px;margin:0;padding:0;border:0;border-radius:0;overflow:hidden}
+.tech-night-heading{position:relative;z-index:3;flex:none;text-align:center;padding:clamp(56px,8vh,100px) 5vw 32px;pointer-events:none}
+.tech-night-dash{display:block;width:38px;height:3px;margin:0 auto 20px;background:var(--ride-amber)}
+.tech-night-heading h2{margin:0;font:400 clamp(44px,7vw,112px)/1.1 var(--about-display);letter-spacing:-.04em;color:#F1EEE6}
+.tech-night-heading p{margin:20px 0 0;font:600 12px/1.4 var(--about-body);font-variant-caps:small-caps;letter-spacing:.16em;text-transform:uppercase;color:var(--ride-cream);opacity:.7}
+.tech-cargo-stage{position:relative;z-index:2;width:85.5%;max-width:1400px;flex:1;min-height:0;overflow:visible}
+.tech-night-scenery{position:absolute;inset:0;pointer-events:none;z-index:0}
+.tech-night-sky{position:absolute;inset:0;width:100%;height:100%;opacity:.65}
+.tech-night-cloud{animation:cargo-cloud-drift 65s ease-in-out infinite alternate}
+.tech-night-cloud-second{animation-duration:83s;animation-delay:-28s}
+.tech-night-hills{position:absolute;left:0;bottom:var(--cargo-road-height);width:100%;height:27%;opacity:.55}
+.tech-night-road{position:absolute;bottom:0;left:0;width:100%;height:var(--cargo-road-height);overflow:visible}
+.tech-night-lamp{position:absolute;bottom:var(--cargo-road-height);width:80px;height:180px}
+.tech-night-lamp svg{position:relative;width:100%;height:100%;opacity:.65}
+.tech-night-lamp-left{left:6%}
+.tech-night-lamp-right{right:6%;transform:scaleX(-1)}
+.tech-night-glow{position:absolute;left:-100px;top:-110px;width:280px;height:320px;background:radial-gradient(ellipse at 50% 43%,var(--ride-amber),transparent 68%);opacity:.12}
+@keyframes cargo-cloud-drift{from{transform:translateX(-35px)}to{transform:translateX(75px)}}
+@media(max-width:639px){
+ .tech-night{--cargo-road-height:12%;min-height:700px}
+ .tech-night-heading{padding:58px 5vw 28px}
+ .tech-night-heading h2{font-size:clamp(36px,10vw,64px)}
+ .tech-night-heading p{font-size:11px}
+ .tech-night-cloud,.tech-night-lamp-right{display:none}
+ .tech-night-lamp-left{left:3%}
+}
+@media(prefers-reduced-motion:reduce){.tech-night-cloud{animation:none}}

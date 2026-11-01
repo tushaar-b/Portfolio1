@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Great+Vibes&family=Imperial+Script&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Bodoni+Moda:wght@400&family=Gloock&family=Italiana&family=Limelight&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/src/style.css">
   </head>
   <body>
@@ -28,155 +29,33 @@
     <!-- Scroll progress bar -->
     <div id="scroll-progress"></div>
 
+    <div id="film-root" aria-hidden="true"></div>
+
     <div id="app">
 
-      <!-- Navigation Bar -->
-      <nav class="navbar">
-        <div class="nav-logo">TB</div>
-        <ul class="nav-links">
-          <li><a href="#about">About</a></li>
-          <li><a href="#projects">Projects</a></li>
-          <li><a href="#skills">Skills</a></li>
-        </ul>
-        <a href="https://www.linkedin.com/in/tushaarbharara" target="_blank" rel="noopener noreferrer" class="nav-connect">
-          Let's Connect
-        </a>
-      </nav>
-
-      <!-- Three.js canvas — fixed in background -->
-      <canvas id="canvas"></canvas>
-
-      <!-- Section 1: Hero -->
-      <section class="hero-section">
-        <!-- ── UI Layer ─────────────────────────────────────────── -->
-        <div class="ui">
-
-          <!-- Top name row -->
-          <header class="name-row">
-            <h1 class="name name-left">Tushaar</h1>
-            <h1 class="name name-right">Bharar<span id="start-point" style="display: inline-block;">a</span></h1>
-          </header>
-
-          <!-- Floating subtitles in the middle flanks -->
-          <div class="mid-row">
-            <div class="subtitle-flank text-left">
-              <p>Aspiring Web Developer</p>
-              <p>& UI/UX Designer</p>
-            </div>
-            
-            <div class="subtitle-flank text-right" style="transition-delay: 0.5s;">
-              <p>Student at</p>
-              <p><strong>VIT VELLORE</strong></p>
-            </div>
-          </div>
-
-          <!-- Bottom row -->
-          <footer class="bottom-row">
-            <div class="contact-col">
-              <a href="https://github.com/tushaar-b" target="_blank" rel="noopener noreferrer" class="contact-link">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                  <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.577.688.479C19.138 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
-                </svg>
-                https://github.com/tushaar-b
-              </a>
-              <a href="https://www.linkedin.com/in/tushaarbharara" target="_blank" rel="noopener noreferrer" class="contact-link">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                </svg>
-                linkedin.com/in/tushaarbharara
-              </a>
-              <a href="mailto:tushaar.bharara@gmail.com" class="contact-link">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                tushaar.bharara@gmail.com
-              </a>
-            </div>
-            <div class="bio-col">
-              <span class="bio-line">Building the web,</span>
-              <span class="bio-line">one thoughtful interaction at a time.</span>
-            </div>
-          </footer>
+      <!-- Section 1: Name behind a centered, waving portrait -->
+      <section class="journey" id="hero-journey"><span id="hero-dive" class="journey-anchor" aria-hidden="true"></span><div class="hero-section stage" aria-labelledby="hero-title">
+        <div class="journey-scene">
+        <nav class="hero-nav" aria-label="Main navigation"><div class="hero-nav-brand">TUSHAAR BHARARA <span class="availability"><i></i> Open to roles and freelance</span></div><div class="hero-nav-links"><a href="#projects">WORK</a><a href="#about">ABOUT</a><a href="mailto:tushaar.bharara@gmail.com">CONTACT</a></div><details class="hero-menu"><summary>Menu</summary><a href="#projects">WORK</a><a href="#about">ABOUT</a><a href="mailto:tushaar.bharara@gmail.com">CONTACT</a></details></nav>
+        <h1 id="hero-title" class="hero-name" aria-label="Tushaar Bharara"><span class="name-word">TUSHAAR</span><span class="name-word">BHARARA</span></h1>
+        <div class="hero-subtitle"><span>DESIGNING</span><span>EXPERIENCES</span></div>
+        <div class="hero-sky" aria-hidden="true"></div>
+        <div id="hero-social-root"></div>
+        <div class="hero-ruler" aria-hidden="true"></div>
+        <span class="hero-scroll">SCROLL TO STEP INSIDE ↓</span>
+        <button type="button" class="experiment-toggle" role="switch" aria-checked="true" aria-label="Experiment: ASCII character" aria-keyshortcuts="A"><span>press to experiment</span><span class="experiment-track" aria-hidden="true"><span class="experiment-thumb"></span></span></button>
+        <div id="zoom-layer" class="journey-camera"><div class="character-stage">
+          <div id="character-root"></div>
+        </div><div class="tiles" aria-hidden="true"></div></div>
         </div>
-      </section>
+        <section class="next-screen" aria-labelledby="next-title" inert><div class="next-content"><p class="next-eyebrow">THE IDEAS BEHIND THE INTERFACE</p><h2 id="next-title"><span class="next-line">A <em class="next-accent">curious</em> mind.</span><span class="next-line">A world to <em class="next-accent">build.</em></span></h2><a href="#about" class="next-cta">STEP INTO MY WORLD <span class="cta-arrow">↓</span></a></div></section>
+        <div id="about-root"></div>
+      </div></section>
 
-      <!-- Section 2: Manifesto Statement -->
-      <section class="manifesto-section">
-        <!-- Floating shapes removed for light theme -->
-
-        <!-- Word-by-word split reveal -->
-        <div class="about-content">
-          <div class="about-line large-text word-reveal" style="--reveal-delay: 0s;">Pass<span id="end-point" style="display: inline-block;">i</span>onate</div>
-          <div class="about-line large-text word-reveal" style="--reveal-delay: 0.12s;">about building</div>
-          <div class="about-line small-text about-flex word-reveal" style="--reveal-delay: 0.24s;">
-            <span class="pill-highlight">things</span> that
-          </div>
-          <div class="about-line small-text word-reveal" style="--reveal-delay: 0.36s;">matter</div>
-        </div>
-      </section>
-
-      <!-- Section 3: Detailed Biography -->
-      <section id="about" class="about-details-section">
-        <!-- Elegant Glass Shapes for Biography background removed for light theme -->
-        <div class="about-details-container">
-          <div class="about-details">
-            <!-- Left column slides in from left -->
-            <div class="details-left slide-in-left">
-              <h2 class="details-title">About Me</h2>
-              <div class="details-sub">CSE (Data Science) @ VIT</div>
-
-              <!-- Animated stat cards -->
-              <div class="stat-cards">
-                <div class="stat-card" data-target="2" data-suffix="nd Year">
-                  <span class="stat-number">0</span><span class="stat-suffix">nd Year</span>
-                  <div class="stat-label">B.Tech CSE - Data Science</div>
-                </div>
-                <div class="stat-card" data-target="3" data-suffix="+ Stacks">
-                  <span class="stat-number">0</span><span class="stat-suffix">+ Stacks</span>
-                  <div class="stat-label">Tech Expertise</div>
-                </div>
-                <div class="stat-card" data-target="10" data-suffix="+ Projects">
-                  <span class="stat-number">0</span><span class="stat-suffix">+ Projects</span>
-                  <div class="stat-label">Built & Shipped</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right column slides in from right -->
-            <div class="details-right slide-in-right">
-              <p class="details-text blur-reveal-paragraph">
-                I am a second-year B.Tech student in Computer Science and Engineering specializing in Data Science at Vellore Institute of Technology (VIT). I am a passionate developer and hackathon builder focused on bridging web engineering, applied AI, and physical computing.
-              </p>
-              <p class="details-text blur-reveal-paragraph">
-                My technical journey spans building scalable full-stack applications (Next.js, React, FastAPI, Supabase), deploying machine learning &amp; explainable AI solutions, and engineering embedded hardware setups (Arduino &amp; Raspberry Pi). Having completed a web development internship and competed as a top finalist in national hackathons like SIH and VinHack, I love building technology that delivers high real-world impact.
-              </p>
-
-              <!-- Skill tags staggered reveal -->
-              <div class="skill-tags">
-                <span class="skill-tag" style="--tag-delay: 0.0s;">Next.js &amp; React</span>
-                <span class="skill-tag" style="--tag-delay: 0.07s;">FastAPI &amp; Node.js</span>
-                <span class="skill-tag" style="--tag-delay: 0.14s;">Machine Learning &amp; XAI</span>
-                <span class="skill-tag" style="--tag-delay: 0.21s;">Supabase &amp; SQL</span>
-                <span class="skill-tag" style="--tag-delay: 0.28s;">Arduino / RPi</span>
-                <span class="skill-tag" style="--tag-delay: 0.35s;">Data Structures &amp; Algo</span>
-                <span class="skill-tag" style="--tag-delay: 0.42s;">UI/UX &amp; Figma</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sphere in bottom left removed for light theme -->
-      </section>
 
       <!-- Section 4: My Journey -->
       <section id="journey" class="journey-section">
         <div id="journey-root"></div>
-      </section>
-
-      <!-- Section 5: Milestones — Flip Cards -->
-      <section id="milestones" class="milestones-section">
-        <div id="milestones-root"></div>
       </section>
 
       <!-- Section 7: Tech Stack -->

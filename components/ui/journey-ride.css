@@ -1,0 +1,121 @@
+/* MY JOURNEY only. Every color and font comes from the incumbent site tokens. */
+#journey.journey-section:has(#my-journey-ride){display:block;padding:0;min-height:0;width:100%;background:var(--about-ink)}
+#journey-root:has(>#my-journey-ride){display:block;width:100%;height:auto}
+#my-journey-ride{position:relative;width:100%;min-height:100dvh;background:var(--ride-bg);color:var(--ride-cream);isolation:isolate}
+#my-journey-ride *{box-sizing:border-box}
+#my-journey-ride .journey-stage{position:relative;width:100%;height:100dvh;min-height:0;overflow:hidden;background:var(--ride-bg);isolation:isolate}
+#my-journey-ride .world{position:absolute;inset:0 auto 0 0;height:100%;width:calc((var(--checkpoint-count)*.9 + 2.2)*100vw);will-change:auto}
+#my-journey-ride :is(.ride-far,.ride-mid,.ride-near,.ride-road){position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#my-journey-ride .ride-far{opacity:.65}
+#my-journey-ride .ride-mid{opacity:.55}
+#my-journey-ride .ride-near{opacity:.65}
+#my-journey-ride .ride-road{overflow:visible}
+#my-journey-ride .journey-title{position:absolute;left:4vw;top:4vh;margin:0;z-index:5;white-space:nowrap;font:400 clamp(60px,8vw,120px)/1.1 var(--about-display);letter-spacing:-.04em;color:var(--ride-cream);transform-origin:0 0;will-change:transform}
+#my-journey-ride .vehicle{position:absolute;left:30%;top:0;width:20vw;max-width:400px;z-index:4;aspect-ratio:300/260;transform-origin:50% 93.8462%;pointer-events:none;will-change:transform}
+#my-journey-ride .vehicle-lean,#my-journey-ride .vehicle-bob{width:100%;height:100%;transform-origin:50% 88%}
+#my-journey-ride .vehicle svg{display:block;width:100%;height:100%;overflow:visible}
+#my-journey-ride .ride-puffs{position:absolute;bottom:6%;left:3%;width:1px;height:1px}
+#my-journey-ride .ride-puffs i{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--ride-cream);opacity:0}
+#my-journey-ride .ride-checkpoints{list-style:none;margin:0;padding:0}
+#my-journey-ride .ride-checkpoint{position:absolute;width:0;height:0;z-index:3}
+#my-journey-ride .ride-card{position:absolute;left:0;bottom:190px;width:360px;min-height:260px;padding:30px 28px;border-radius:4px;background:var(--ride-cream);color:var(--ride-road);border:2px solid var(--ride-road);text-align:left;display:flex;flex-direction:column;justify-content:center;gap:14px;transform-origin:50% 100%;will-change:transform,opacity}
+#my-journey-ride .ride-card::after{content:'';position:absolute;left:50%;top:100%;height:36px;width:1px;background:var(--ride-cream)}
+#my-journey-ride .ride-card-dash{display:block;width:38px;height:3px;background:var(--ride-amber);margin-bottom:3px}
+#my-journey-ride .ride-card-label{font:600 12px/1.4 var(--about-body);letter-spacing:.16em;text-transform:uppercase;margin:0}
+#my-journey-ride .ride-card h3{font:700 clamp(23px,2vw,29px)/1.17 var(--about-display);letter-spacing:-.025em;margin:0;overflow-wrap:break-word}
+#my-journey-ride .ride-card-period{font:600 13px/1.4 var(--about-body);margin:0}
+#my-journey-ride .ride-card-description{font:400 14px/1.6 var(--about-body);margin:0}
+#my-journey-ride .ride-card-highlights{position:relative;margin:0;padding-top:12px;display:grid;gap:8px;color:var(--ride-road)}
+#my-journey-ride .ride-card-highlights::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--ride-amber);opacity:.3}
+#my-journey-ride .ride-card-highlight{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+#my-journey-ride .ride-card-highlight dt{font:600 11px/1.4 var(--about-body);font-variant-caps:small-caps;letter-spacing:.12em;text-transform:uppercase}
+#my-journey-ride .ride-card-highlight dd{margin:0;font:700 20px/1.2 var(--about-display);text-align:right}
+#my-journey-ride .ride-marker{position:absolute;left:-40px;bottom:0;width:80px;height:160px;overflow:visible}
+#my-journey-ride .checkpoint-badge{position:absolute;left:-40px;bottom:80px;width:80px;height:80px;z-index:2}
+#my-journey-ride .checkpoint-badge svg,#my-journey-ride .ride-flag svg{display:block;width:100%;height:100%}
+#my-journey-ride .ride-flag{position:absolute;left:0;bottom:64px;width:36px;height:26px;transform-origin:0 50%;z-index:1}
+#my-journey-ride .ride-ground-ring{position:absolute;left:0;bottom:-8px;width:76px;height:18px;border:1px solid var(--ride-amber);border-radius:50%;pointer-events:none}
+#my-journey-ride .ride-hint{position:absolute;left:30%;top:83%;margin:0;z-index:5;transform:translateX(-50%);font:400 15px/1.4 var(--about-label);letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;color:var(--ride-cream)}
+#my-journey-ride .ride-hint span{display:inline-block;margin-left:10px;color:var(--ride-amber)}
+#my-journey-ride .progress{position:absolute;left:4vw;bottom:30px;width:calc(92% - 120px);max-width:1100px;height:43px;z-index:6;color:var(--ride-cream)}
+#my-journey-ride .ride-ticks{display:block;width:100%;height:18px;opacity:.38}
+#my-journey-ride .ride-progress-fill{position:absolute;left:0;right:0;top:18px;height:1px;transform-origin:0 50%;background:var(--ride-amber);transform:scaleX(0)}
+#my-journey-ride .ride-progress-dot{position:absolute;top:14px;width:8px;height:8px;border-radius:50%;background:var(--ride-road);border:1px solid var(--ride-cream);transform:translateX(-50%)}
+#my-journey-ride .ride-progress-dot[data-visited=true]{background:var(--ride-cream)}
+#my-journey-ride .ride-progress-dot[data-active=true]{background:var(--ride-amber);border-color:var(--ride-amber)}
+#my-journey-ride .ride-progress-dot span{position:absolute;top:16px;left:50%;transform:translateX(-50%);white-space:nowrap;font:11px/1 var(--about-label);letter-spacing:.08em}
+#my-journey-ride .ride-debug{position:absolute;top:18px;right:18px;z-index:20;width:250px;max-width:calc(100vw - 36px);padding:15px;background:var(--ride-cream);color:var(--ride-bg);border:2px solid var(--ride-amber);font:13px/1.5 var(--about-body)}
+#my-journey-ride .ride-debug[hidden]{display:none}
+#my-journey-ride .ride-debug output{display:block;margin-bottom:10px;font-variant-numeric:tabular-nums}
+#my-journey-ride .ride-debug-buttons{display:flex;flex-wrap:wrap;gap:5px}
+#my-journey-ride .ride-debug button{min-height:34px;padding:5px 8px;border:1px solid var(--ride-road);background:var(--ride-cream);color:var(--ride-road);font:inherit;cursor:pointer}
+#my-journey-ride .ride-debug button:focus-visible{outline:3px solid var(--ride-amber);outline-offset:3px}
+@media (min-width:640px) and (max-width:1023px){#my-journey-ride .vehicle{width:24vw}#my-journey-ride .ride-card{width:300px;min-height:230px;padding:26px}#my-journey-ride .ride-card h3{font-size:25px}}
+@media(min-width:640px) and (max-height:760px){#my-journey-ride .ride-card{min-height:215px;bottom:168px;padding:22px 25px;gap:12px}#my-journey-ride .ride-marker{height:140px}#my-journey-ride .checkpoint-badge{bottom:60px}#my-journey-ride .ride-flag{bottom:44px}#my-journey-ride .ride-card h3{font-size:24px}}
+@media(max-width:639px){
+ #my-journey-ride .journey-title{font-size:14vw;left:7vw;top:4vh}
+ #my-journey-ride .vehicle{width:36vw;max-width:none}
+ #my-journey-ride .ride-card{top:104px;bottom:auto;left:-15vw;width:86vw;min-height:220px;padding:24px;gap:12px;transform-origin:50% 0}
+ #my-journey-ride .ride-card::after{top:auto;bottom:100%;height:35px;left:calc(50% + 15vw)}
+ #my-journey-ride .ride-card h3{font-size:27px}
+ #my-journey-ride .ride-card-label{font-size:11px}
+ #my-journey-ride .ride-marker{height:104px;bottom:0}
+ #my-journey-ride .checkpoint-badge{left:-28px;bottom:48px;width:56px;height:56px}
+ #my-journey-ride .ride-flag{bottom:41px;width:24px;height:18px}
+ #my-journey-ride .ride-hint{top:52%;font-size:12px}
+ #my-journey-ride .progress{left:7vw;width:calc(86vw - 110px);bottom:25px}
+ #my-journey-ride .ride-progress-dot span{font-size:10px;letter-spacing:.04em;white-space:normal;text-align:center;width:calc((86vw - 110px)/var(--checkpoint-count) - 8px);line-height:1.1;overflow-wrap:anywhere}
+ #my-journey-ride .ride-progress-dot:not([data-active="true"]) span{display:none}
+ #my-journey-ride .ride-progress-dot[data-active="true"] span{width:max-content;max-width:30vw;white-space:normal}
+ #my-journey-ride .ride-near{display:none}
+}
+@media(min-width:640px) and (max-height:550px){
+ #my-journey-ride .ride-card{width:260px;min-height:150px;bottom:110px;padding:16px;gap:9px}
+ #my-journey-ride .ride-card h3{font-size:20px}
+ #my-journey-ride .ride-marker{height:104px}
+ #my-journey-ride .checkpoint-badge{bottom:24px}
+ #my-journey-ride .ride-flag{bottom:8px}
+ #my-journey-ride .ride-hint{top:82%;font-size:12px}
+ #my-journey-ride .progress{bottom:15px}
+}
+@media(max-width:639px) and (max-height:700px){
+ #my-journey-ride .ride-card{top:88px;min-height:190px;padding:20px;gap:10px}
+ #my-journey-ride .ride-card h3{font-size:24px}
+}
+@media(prefers-reduced-motion:reduce){
+ #my-journey-ride .journey-stage{height:auto;min-height:0;padding:70px 7vw 90px;overflow:visible}
+ #my-journey-ride .journey-title{position:relative;left:auto;top:auto;white-space:normal;font-size:clamp(44px,8vw,100px);margin-bottom:60px}
+ #my-journey-ride .world{position:relative;inset:auto;width:100%;height:auto;will-change:auto}
+ #my-journey-ride :is(.ride-far,.ride-mid,.ride-near,.ride-road,.vehicle,.progress,.ride-hint){display:none}
+ #my-journey-ride .ride-checkpoints{position:relative;margin-left:30px;padding-left:48px;border-left:1px solid var(--ride-cream);display:grid;gap:35px}
+ #my-journey-ride .ride-checkpoint{position:relative;left:auto!important;top:auto!important;width:auto;height:auto}
+ #my-journey-ride .ride-marker{left:-83px;top:24px;bottom:auto;width:68px;height:136px}
+ #my-journey-ride .ride-flag,#my-journey-ride .ride-post,#my-journey-ride .ride-ground-ring{display:none}
+ #my-journey-ride .checkpoint-badge{left:-83px;top:24px;bottom:auto;width:68px;height:68px}
+ #my-journey-ride .ride-card{position:relative;left:auto;top:auto;bottom:auto;width:min(100%,600px);min-height:220px;transform:none;will-change:auto}
+ #my-journey-ride .ride-card::after{display:none}
+ #my-journey-ride .ride-debug{display:none}
+}
+
+#my-journey-ride .vehicle[data-vehicle="car"]{aspect-ratio:360/260}
+
+#my-journey-ride .vehicle[data-vehicle="auto"]{width:22vw;max-width:400px;aspect-ratio:360/224;transform-origin:50.277778% 97.321429%}
+#my-journey-ride .vehicle[data-vehicle="auto"] .ride-puffs{left:0;top:0;bottom:auto}
+#my-journey-ride .auto-lean,#my-journey-ride .auto-bob,#my-journey-ride .auto-idle{transform-origin:181px 180px}
+#my-journey-ride .auto-idle{transform:translateY(0)}
+#my-journey-ride[data-parked="true"] .auto-idle{animation:auto-engine .0714286s linear infinite}
+#my-journey-ride[data-traveling="true"] .auto-idle{animation:auto-rock .8s ease-in-out infinite alternate}
+#my-journey-ride[data-paused="true"] .auto-idle{animation-play-state:paused}
+@keyframes auto-engine{0%,100%{transform:translateY(-.6px)}50%{transform:translateY(.6px)}}
+@keyframes auto-rock{from{transform:rotate(-.8deg)}to{transform:rotate(.8deg)}}
+@media(min-width:640px){
+ #my-journey-ride:has(.vehicle[data-vehicle="auto"]) .ride-card{bottom:max(190px, min(13.688889vw,248.888889px) + 24px)}
+}
+@media(min-width:640px) and (max-width:1023px){
+ #my-journey-ride .vehicle[data-vehicle="auto"]{width:26vw}
+ #my-journey-ride:has(.vehicle[data-vehicle="auto"]) .ride-card{bottom:max(190px,calc(16.177778vw + 24px))}
+}
+@media(max-width:639px){#my-journey-ride .vehicle[data-vehicle="auto"]{width:40vw}}
+@media(prefers-reduced-motion:reduce){#my-journey-ride .auto-idle{animation:none!important}}
+
+#my-journey-ride[data-active="true"] .world{will-change:transform}

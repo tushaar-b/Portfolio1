@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 
 interface FlipCardProps {
   front: React.ReactNode;
@@ -9,14 +9,21 @@ interface FlipCardProps {
 
 const FlipCard: React.FC<FlipCardProps> = ({ front, back, accent }) => {
   const [flipped, setFlipped] = useState(false);
+  const reduce = useReducedMotion();
 
   return (
     <div
+      tabIndex={0}
+      role="button"
+      aria-label="Flip journey card"
+      onFocus={() => setFlipped(true)}
+      onBlur={() => setFlipped(false)}
+      onKeyDown={e => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); setFlipped(v => !v); } }}
       onMouseEnter={() => setFlipped(true)}
       onMouseLeave={() => setFlipped(false)}
       style={{
         width: "100%",
-        height: "360px",
+        height: "clamp(260px, 39vh, 360px)",
         cursor: "pointer",
         perspective: "1200px",
         userSelect: "none",
@@ -24,7 +31,7 @@ const FlipCard: React.FC<FlipCardProps> = ({ front, back, accent }) => {
     >
       <motion.div
         animate={{ rotateY: flipped ? 180 : 0 }}
-        transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: reduce ? 0 : 0.55, ease: [0.23, 1, 0.32, 1] }}
         style={{
           width: "100%",
           height: "100%",
@@ -39,20 +46,20 @@ const FlipCard: React.FC<FlipCardProps> = ({ front, back, accent }) => {
             inset: 0,
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
-            borderRadius: "24px",
-            background: "var(--bg-hero)",
-            border: `1px solid rgba(0,0,0,0.10)`,
+            borderRadius: "4px",
+            background: "var(--about-cream)",
+            border: "2px solid var(--about-navy)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             gap: "1.25rem",
             padding: "2.5rem 2rem",
-            boxShadow: "0 8px 40px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.5)",
+            boxShadow: "3px 3px 0 var(--about-navy)",
           }}
         >
           {/* Accent line at top */}
-          <div style={{ width: "48px", height: "3px", borderRadius: "99px", background: accent }} />
+          <div style={{ width: "48px", height: "3px", borderRadius: "99px", background: "var(--about-amber)" }} />
           {front}
 
         </div>
@@ -65,20 +72,20 @@ const FlipCard: React.FC<FlipCardProps> = ({ front, back, accent }) => {
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
-            borderRadius: "24px",
-            backgroundColor: "var(--bg-hero)",
-            backgroundImage: `linear-gradient(135deg, ${accent}18, ${accent}06)`,
-            border: `1px solid ${accent}44`,
+            borderRadius: "4px",
+            backgroundColor: "var(--about-skin)",
+            backgroundImage: "none",
+            border: "2px solid var(--about-navy)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             gap: "1.25rem",
             padding: "2.5rem 2rem",
-            boxShadow: `0 8px 40px rgba(0,0,0,0.35), 0 0 60px ${accent}18, inset 0 1px 0 ${accent}22`,
+            boxShadow: "3px 3px 0 var(--about-navy)",
           }}
         >
-          <div style={{ width: "48px", height: "3px", borderRadius: "99px", background: accent }} />
+          <div style={{ width: "48px", height: "3px", borderRadius: "99px", background: "var(--about-amber)" }} />
           {back}
         </div>
       </motion.div>
@@ -92,19 +99,19 @@ const FrontLabel = ({ label, sub }: { label: string; sub?: string }) => (
     {sub && (
       <p style={{
         fontFamily: "'Outfit', sans-serif",
-        fontSize: "0.72rem",
+        fontSize: "0.85rem",
         fontWeight: 600,
         letterSpacing: "0.2em",
         textTransform: "uppercase",
-        color: "var(--color-secondary)",
+        color: "var(--about-navy)",
         marginBottom: "0.6rem",
       }}>{sub}</p>
     )}
     <h3 style={{
-      fontFamily: "'Outfit', sans-serif",
+      fontFamily: "var(--about-display)",
       fontSize: "clamp(1.25rem, 2.5vw, 1.6rem)",
       fontWeight: 800,
-      color: "var(--color-primary)",
+      color: "var(--about-navy)",
       lineHeight: 1.15,
       letterSpacing: "-0.02em",
       textAlign: "center",
@@ -134,7 +141,7 @@ const StatLabel = ({ value }: { value: string }) => (
     fontFamily: "'Outfit', sans-serif",
     fontSize: "0.9rem",
     fontWeight: 400,
-    color: "var(--color-secondary)",
+    color: "var(--about-navy)",
     lineHeight: 1.5,
   }}>{value}</p>
 );
@@ -142,13 +149,14 @@ const StatLabel = ({ value }: { value: string }) => (
 /* ─── Animated card wrapper with scroll reveal ─── */
 const AnimatedCard = ({ card, index }: { card: any; index: number }) => {
   const ref = React.useRef(null);
+  const reduce = useReducedMotion();
   const isInView = useInView(ref, { once: false, margin: "-15% 0px -15% 0px" });
 
   return (
     <motion.div
       ref={ref}
-      animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 60 }}
-      transition={{ duration: 0.7, delay: index * 0.12, ease: [0.23, 1, 0.32, 1] }}
+      animate={{ opacity: reduce || isInView ? 1 : 0, y: reduce || isInView ? 0 : 24, rotate: reduce || isInView ? 0 : (index % 2 ? 1 : -1) }}
+      transition={{ duration: reduce ? 0 : 0.5, delay: reduce ? 0 : index * 0.1, ease: [0.23, 1, 0.32, 1] }}
     >
       <FlipCard front={card.front} back={card.back} accent={card.accent} />
     </motion.div>
@@ -159,37 +167,37 @@ const AnimatedCard = ({ card, index }: { card: any; index: number }) => {
 const FlipCardsSection = () => {
   const cardData = [
     {
-      accent: "#818cf8",
+      accent: "#94470A",
       sub: "Schooling",
       front: <FrontLabel label="Brain International School" sub="Schooling" />,
       back: (
-        <BackContent accent="#818cf8">
-          <Stat value="94%" accent="#818cf8" />
+        <BackContent accent="#94470A">
+          <Stat value="94%" accent="#94470A" />
           <StatLabel value="Class X" />
-          <div style={{ width: "32px", height: "1px", background: "rgba(255,255,255,0.15)", margin: "0.25rem 0" }} />
-          <Stat value="96%" accent="#818cf8" />
+          <div style={{ width: "32px", height: "1px", background: "var(--about-navy)", margin: "0.25rem 0" }} />
+          <Stat value="96%" accent="#94470A" />
           <StatLabel value="Class XII" />
         </BackContent>
       ),
     },
     {
-      accent: "#F69C40",
+      accent: "#94470A",
       sub: "Higher Education",
       front: <FrontLabel label="B.Tech CSE (Data Science)" sub="Higher Education" />,
       back: (
-        <BackContent accent="#F69C40">
-          <Stat value="9.4" accent="#F69C40" />
+        <BackContent accent="#94470A">
+          <Stat value="9.4" accent="#94470A" />
           <StatLabel value="CGPA · VIT Vellore" />
         </BackContent>
       ),
     },
     {
-      accent: "#34d399",
+      accent: "#94470A",
       sub: "Experience",
       front: <FrontLabel label="Web Development Intern" sub="Experience" />,
       back: (
-        <BackContent accent="#34d399">
-          <Stat value="Inamigos" accent="#34d399" />
+        <BackContent accent="#94470A">
+          <Stat value="Inamigos" accent="#94470A" />
           <StatLabel value="Foundation" />
         </BackContent>
       ),
@@ -205,7 +213,7 @@ const FlipCardsSection = () => {
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      padding: "2vh 5vw 12vh",
+      padding: "2vh 9vw 8vh",
     }}>
       {/* Cards grid */}
       <div style={{

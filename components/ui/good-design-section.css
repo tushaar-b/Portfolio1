@@ -1,0 +1,23 @@
+#good-design.good-design-section,#good-design-root{margin:0;padding:0;border:0;border-radius:0;background:var(--about-ink)}
+.focus-night{position:relative;width:100%;margin:0;padding:0;isolation:isolate}
+.focus-stage{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100dvh;min-height:500px;overflow:hidden;background:var(--ride-bg)}
+.focus-stars{position:absolute;inset:0;width:100%;height:100%;opacity:.45;pointer-events:none}
+.focus-composition{position:relative;z-index:2;width:90%;max-width:1400px}
+.focus-line{margin:0;font:400 clamp(56px,11vw,190px)/.95 var(--about-display);letter-spacing:-.025em;color:#F1EEE6;white-space:nowrap}
+.focus-line-first{text-align:left}
+.focus-line-second{text-align:right;margin-top:clamp(16px,3vh,36px)}
+.focus-word{position:relative;display:inline-block}
+.focus-word-amber{color:var(--ride-amber)}
+.focus-subtitle-wrap{position:relative;width:fit-content;max-width:100%;margin:clamp(64px,13vh,150px) auto 0;text-align:center}
+.focus-subtitle{margin:0;font:400 clamp(20px,2.4vw,36px)/1.4 var(--about-body);color:color-mix(in srgb,#F1EEE6 85%,transparent)}
+.focus-underline{display:block;width:100%;height:2px;margin-top:16px;background:var(--ride-amber);transform-origin:left center}
+.focus-glow{position:absolute;left:0;top:0;z-index:1;width:80vw;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,var(--ride-amber),transparent 68%);opacity:0;pointer-events:none}
+.focus-finder{position:absolute;left:0;top:0;z-index:3;opacity:0;pointer-events:none}
+.focus-finder-pulse{position:relative;width:100%;height:100%}
+.focus-brackets{position:absolute;inset:0;display:block;width:100%;height:100%;overflow:visible}
+.focus-finder-cream{color:#F1EEE6}
+.focus-finder-amber,.focus-cross{color:var(--ride-amber)}
+.focus-af{position:absolute;left:16px;top:-16px;color:var(--ride-amber);font:600 10px/1 var(--about-body);font-variant-caps:small-caps;letter-spacing:.14em}
+.focus-cross{position:absolute;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%)}
+@media(max-width:639px){.focus-composition{width:92%}.focus-line{letter-spacing:-.045em}.focus-subtitle-wrap{margin-top:12vh}.focus-af{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.focus-stage{height:auto;min-height:100dvh;padding:100px 0}.focus-finder{display:none}.focus-stars .night-star-twinkle{animation:none}}

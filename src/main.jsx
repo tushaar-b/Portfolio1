@@ -1,34 +1,54 @@
+import { installJourneyDebug } from '../components/ui/journey-debug';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+gsap.registerPlugin(ScrollTrigger);
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import Lenis from 'lenis';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { DemoOne } from '../components/ui/demo.tsx';
-import { FlipCardsSection } from '../components/ui/flip-cards.tsx';
+import { JourneyRide } from '../components/ui/journey-ride.tsx';
 import { TechStackSection } from '../components/ui/tech-stack.tsx';
 import { ProjectsSection } from '../components/ui/projects-section.tsx';
 import { ProjectsPage } from '../components/ui/projects-page.tsx';
 import { GoodDesignSection } from '../components/ui/good-design-section.tsx';
 import { VideoFooter } from '../components/ui/video-footer.tsx';
+import { AboutStage } from '../components/ui/about-stage.jsx';
+import { WavingCharacter } from '../components/ui/waving-character.tsx';
+import { HeroSocialRail } from '../components/ui/hero-social-rail.tsx';
+import './hero-visuals.css';
+
+const projectsReturnOnLoad = location.hash === '#projects' || sessionStorage.getItem('returnTo') === 'projects';
+if (projectsReturnOnLoad) {
+  history.scrollRestoration = 'manual';
+  const app = document.getElementById('app');
+  if (app) app.style.opacity = '0';
+}
+
+// Every React root is disposed with the vanilla entrypoint during HMR.
+const mountedRoots = [];
+const createAppRoot = node => {
+  const root = ReactDOM.createRoot(node); mountedRoots.push(root); return root;
+};
+const avatarRoot = document.getElementById('avatar-root') || document.body.appendChild(Object.assign(document.createElement('div'), { id: 'avatar-root' }));
+const characterRoot = document.getElementById('character-root');
+const heroSocialRoot = document.getElementById('hero-social-root');
+if (heroSocialRoot) createAppRoot(heroSocialRoot).render(<HeroSocialRail />);
+if (characterRoot) {
+  createAppRoot(characterRoot).render(<React.StrictMode><WavingCharacter size="100%" className="hero-character" /></React.StrictMode>);
+}
+
+
+const aboutRoot = document.getElementById('about-root');
+if (aboutRoot) createAppRoot(aboutRoot).render(<React.StrictMode><AboutStage /></React.StrictMode>);
 
 // ─── Render MY JOURNEY section ───────────────────────────────────────────────
 const journeyRoot = document.getElementById('journey-root');
 if (journeyRoot) {
-  ReactDOM.createRoot(journeyRoot).render(
+  createAppRoot(journeyRoot).render(
     <React.StrictMode>
-      <DemoOne />
-    </React.StrictMode>
-  );
-}
-
-// ─── Render Milestones Flip-Cards Section ────────────────────────────────────
-const milestonesRoot = document.getElementById('milestones-root');
-if (milestonesRoot) {
-  ReactDOM.createRoot(milestonesRoot).render(
-    <React.StrictMode>
-      <FlipCardsSection />
+      <JourneyRide vehicle="auto" />
     </React.StrictMode>
   );
 }
@@ -36,7 +56,7 @@ if (milestonesRoot) {
 // ─── Render Tech Stack Section ───────────────────────────────────────────────
 const techStackRoot = document.getElementById('tech-stack-root');
 if (techStackRoot) {
-  ReactDOM.createRoot(techStackRoot).render(
+  createAppRoot(techStackRoot).render(
     <React.StrictMode>
       <TechStackSection />
     </React.StrictMode>
@@ -46,7 +66,7 @@ if (techStackRoot) {
 // ─── Render Projects Section (big title in portfolio) ───────────────────────────
 const projectsRoot = document.getElementById('projects-root');
 if (projectsRoot) {
-  ReactDOM.createRoot(projectsRoot).render(
+  createAppRoot(projectsRoot).render(
     <React.StrictMode>
       <ProjectsSection />
     </React.StrictMode>
@@ -56,7 +76,7 @@ if (projectsRoot) {
 // ─── Render Projects Page (fully independent, outside #app) ───────────────────────
 const projectsPageRoot = document.getElementById('projects-page-root');
 if (projectsPageRoot) {
-  ReactDOM.createRoot(projectsPageRoot).render(
+  createAppRoot(projectsPageRoot).render(
     <React.StrictMode>
       <ProjectsPage />
     </React.StrictMode>
@@ -66,7 +86,7 @@ if (projectsPageRoot) {
 // ─── Render Good Design Section ─────────────────────────────────────────────
 const goodDesignRoot = document.getElementById('good-design-root');
 if (goodDesignRoot) {
-  ReactDOM.createRoot(goodDesignRoot).render(
+  createAppRoot(goodDesignRoot).render(
     <React.StrictMode>
       <GoodDesignSection />
     </React.StrictMode>
@@ -76,7 +96,7 @@ if (goodDesignRoot) {
 // ─── Render Video Footer ──────────────────────────────────────────────────
 const videoFooterRoot = document.getElementById('video-footer-root');
 if (videoFooterRoot) {
-  ReactDOM.createRoot(videoFooterRoot).render(
+  createAppRoot(videoFooterRoot).render(
     <React.StrictMode>
       <VideoFooter />
     </React.StrictMode>
@@ -90,19 +110,69 @@ const lenis = new Lenis({
   smoothWheel: true,
 });
 
-// Handle anchor links for smooth scrolling
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
-    e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      lenis.scrollTo(target);
-    }
-  });
-});
+// One delegated anchor handler shares the one Lenis instance. About is a beat
+// within the master pin, so its navigation target is a timeline coordinate.
+const handleAnchorClick = event => {
+  const anchor = event.target.closest?.('a[href^="#"]');
+  if (!anchor) return;
+  const href = anchor.getAttribute('href');
+  if (!href || href.length < 2) return;
+  const target = document.querySelector(href);
+  if (!target) return;
+  event.preventDefault();
+  const story = ScrollTrigger.getById('hero-journey');
+  const destination = href === '#about' && story?.animation && !reducedMotion.matches
+    ? story.start + (story.end - story.start) * story.animation.labels['beat-a'] / story.animation.duration()
+    : target;
+  lenis.scrollTo(destination, { duration: 1.2, force: true });
+};
+document.addEventListener('click', handleAnchorClick);
 
-// Handle initial load with hash
-if (window.location.hash) {
+// Restore the folder only after fonts and both pinned scenes have their geometry.
+let projectsLanding = null;
+const landAtProjects = () => {
+  if (projectsLanding) return projectsLanding;
+  history.scrollRestoration = 'manual';
+  const app = document.getElementById('app');
+  if (app) { app.getAnimations().filter(animation => animation.id === 'projects-return').forEach(animation => animation.cancel()); app.style.opacity = '0'; }
+  projectsLanding = (async () => {
+    await document.fonts.ready;
+    await new Promise(resolve => {
+      const ready = () => {
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const heroReady = reduced || !document.getElementById('character-root') || ScrollTrigger.getById('hero-journey');
+        const rideReady = reduced || !document.getElementById('journey-root') || ScrollTrigger.getById('journey-ride');
+        if (heroReady && rideReady) resolve();
+        else requestAnimationFrame(ready);
+      };
+      requestAnimationFrame(ready);
+    });
+    ScrollTrigger.refresh();
+    lenis.resize();
+    const target = document.getElementById('projects');
+    lenis.scrollTo(target ? '#projects' : 0, { immediate: true, force: true });
+    ScrollTrigger.update();
+    const landingY = window.scrollY;
+    ScrollTrigger.getAll().forEach(trigger => {
+      if (trigger.end <= landingY) {
+        trigger.getTween()?.progress(1);
+        trigger.animation?.totalProgress(1);
+      }
+    });
+    sessionStorage.removeItem('returnTo');
+    history.replaceState({ ...history.state, projectsDetail: false }, '', '/#projects');
+    if (app) {
+      app.style.opacity = '';
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) app.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150, id: 'projects-return' });
+    }
+  })().finally(() => { projectsLanding = null; });
+  return projectsLanding;
+};
+
+// Other initial anchors retain their existing behavior.
+if (projectsReturnOnLoad) {
+  landAtProjects();
+} else if (window.location.hash) {
   setTimeout(() => {
     const target = document.querySelector(window.location.hash);
     if (target) {
@@ -120,246 +190,44 @@ window.addEventListener('open-projects-page', () => {
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
 });
-window.addEventListener('close-projects-page', () => {
+const closeProjectsPage = () => {
   document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
-});
+  landAtProjects();
+};
+const restoreProjectsHistory = () => {
+  if (location.hash === '#projects') queueMicrotask(() => {
+    if (document.getElementById('app')?.style.display !== 'none') landAtProjects();
+  });
+};
+window.addEventListener('close-projects-page', closeProjectsPage);
+window.addEventListener('popstate', restoreProjectsHistory);
+window.addEventListener('hashchange', restoreProjectsHistory);
 
-// ─── Renderer ──────────────────────────────────────────────────────────────
-const canvas = document.getElementById('canvas');
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
-renderer.shadowMap.enabled = true;
+// The root mascot and hero share one scrubbed journey controller.
+const sayHi = () => {
+  const contact = document.querySelector('#contact, [data-contact], #video-footer-root');
+  lenis.scrollTo(contact || 0, { immediate: reducedMotion.matches, duration: 1.2, force: true });
+};
+window.addEventListener('journey-contact', sayHi);
 
-// ─── Scene ─────────────────────────────────────────────────────────────────
-const scene = new THREE.Scene();
-
-// ─── Camera — frame head + upper shoulders (cropping hollow cuffs) ─────────
-const camera = new THREE.PerspectiveCamera(17, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 13.2, 22.0); // Moved closer and slightly higher
-camera.lookAt(0, 13.0, 0); // Point at head/collar level
-camera.zoom = 1.25;
-camera.updateProjectionMatrix();
-
-// ─── Lights ────────────────────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-
-const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
-keyLight.position.set(3, 10, 8);
-scene.add(keyLight);
-
-// Strong rim/back light — gives that blue-purple glow from the reference image
-const rimLight = new THREE.DirectionalLight(0x3366ff, 5.0);
-rimLight.position.set(-6, 5, -6);
-scene.add(rimLight);
-
-// Warm fill from front-left
-const fillLight = new THREE.DirectionalLight(0xffe8cc, 1.2);
-fillLight.position.set(-4, 12, 10);
-scene.add(fillLight);
-
-// ─── Environment (HDR) ─────────────────────────────────────────────────────
-new RGBELoader().load('/models/char_enviorment.hdr', (tex) => {
-  tex.mapping = THREE.EquirectangularReflectionMapping;
-  scene.environment = tex;
-  // No scene.background → CSS gradient shows through
-});
-
-// ─── Load model ────────────────────────────────────────────────────────────
-const loader = new GLTFLoader();
-const draco = new DRACOLoader();
-draco.setDecoderPath('/draco/');
-loader.setDRACOLoader(draco);
-
-let mixer;
-let headBone;
-let model;
-
-loader.load(
-  '/models/character.glb',
-  (gltf) => {
-    model = gltf.scene;
-
-    // 1. Console log to print names of all meshes for debugging
-    console.log("=== ALL MESHES IN GLTF ===");
-    model.traverse((child) => {
-      if (child.isMesh) {
-        console.log(child.name);
-      }
-    });
-
-    // 2. Allowed meshes (normalized to lower-case without dots or underscores to prevent Three.js sanitization issues)
-    const allowedNormalized = [
-      "cap001",
-      "cap002",
-      "ear001",
-      "eyebrow",
-      "eyes001",
-      "face002",
-      "hair",
-      "neck",
-      "teeth001"
-    ];
-
-    model.traverse((node) => {
-      if (node.isMesh) {
-        const normName = node.name.toLowerCase().replace(/[\._]/g, '');
-        const isShirt = normName.startsWith("cube006");
-        
-        // 3. Toggle child.visible = false on everything else
-        if (!allowedNormalized.includes(normName) && !isShirt) {
-          node.visible = false;
-        } else {
-          node.visible = true;
-          node.castShadow = true;
-          node.receiveShadow = true;
-          node.frustumCulled = false;
-
-          // Set shirt color to a rich dark black
-          if (isShirt) {
-            const mats = Array.isArray(node.material) ? node.material : [node.material];
-            mats.forEach(mat => {
-              mat.transparent = false;
-              mat.opacity = 1;
-              mat.depthWrite = true;
-              if (mat.color) {
-                mat.color.set("#000000"); // Pure opaque black
-              }
-              // Adjust lighting response for ultra-matte fabric look
-              mat.roughness = 1.0;
-              mat.metalness = 0.0;
-              mat.needsUpdate = true;
-            });
-          }
-        }
-      }
-    });
-
-    model.position.y = -0.5; // Lift up slightly but keep arm joints hidden
-    scene.add(model);
-
-    // Use spine006 for head look-at (original bone name)
-    headBone = model.getObjectByName('spine.006') || model.getObjectByName('spine006') || null;
-
-    // Play intro + blink animations if present
-    if (gltf.animations?.length) {
-      mixer = new THREE.AnimationMixer(model);
-      const introClip = gltf.animations.find(c => c.name === 'introAnimation');
-      if (introClip) {
-        const action = mixer.clipAction(introClip);
-        action.setLoop(THREE.LoopOnce, 1);
-        action.clampWhenFinished = true;
-        action.play();
-        // Start blink after intro
-        setTimeout(() => {
-          const blinkClip = gltf.animations.find(c => c.name === 'Blink');
-          if (blinkClip) mixer.clipAction(blinkClip).play().fadeIn(0.5);
-        }, 2500);
-      } else {
-        // fallback — play first clip
-        mixer.clipAction(gltf.animations[0]).play();
-      }
-    }
-
-    // Show canvas once model is in
-    canvas.style.transition = 'opacity 1.5s ease-in';
-    canvas.style.opacity = '1';
-    modelLoaded = true;
-    setTimeout(() => {
-      canvas.style.transition = 'none';
-    }, 1500);
-  },
-  undefined,
-  (err) => console.error('Model error', err)
-);
-
-// ─── Mouse & Scroll tracking ───────────────────────────────────────────────
-const mouse = { x: 0, y: 0 };
-const interp = { x: 0, y: 0 };
-let scrollPercent = 0;
-let targetScroll = 0;
-let modelLoaded = false;
-
-document.addEventListener('mousemove', (e) => {
-  mouse.x = (e.clientX / window.innerWidth  - 0.5) * 2;
-  mouse.y = -(e.clientY / window.innerHeight - 0.5) * 2;
-});
+lenis.on('scroll', ScrollTrigger.update);
+const rafLenis = time => lenis.raf(time * 1000);
+gsap.ticker.add(rafLenis);
+gsap.ticker.lagSmoothing(0);
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const syncScrollMotion = () => { lenis.options.smoothWheel = !reducedMotion.matches; };
+reducedMotion.addEventListener('change', syncScrollMotion);
+syncScrollMotion();
 
 window.addEventListener('scroll', () => {
+  document.querySelector('.navbar')?.classList.toggle('scrolled', window.scrollY > 50);
   const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-  scrollPercent = maxScroll > 0 ? window.scrollY / maxScroll : 0;
-
-  // Update navbar background on scroll
-  const navbar = document.querySelector('.navbar');
-  if (navbar) {
-    if (window.scrollY > 50) {
-      navbar.classList.add('scrolled');
-    } else {
-      navbar.classList.remove('scrolled');
-    }
-  }
-});
-
-// ─── Render loop ───────────────────────────────────────────────────────────
-const clock = new THREE.Clock();
-
-(function animate(time) {
-  requestAnimationFrame(animate);
-  lenis.raf(time);
-
-  // Fade out WebGL canvas as we scroll down
-  if (modelLoaded && canvas) {
-    canvas.style.opacity = Math.max(0, 1 - (scrollPercent / 0.35));
-  }
-
-  const delta = clock.getDelta();
-  if (mixer) mixer.update(delta);
-
-  // Smooth interpolation towards mouse target
-  interp.x += (mouse.x - interp.x) * 0.05;
-  interp.y += (mouse.y - interp.y) * 0.05;
-
-  targetScroll = THREE.MathUtils.lerp(targetScroll, scrollPercent, 0.08);
-
-  // 1. Model sits at its place (no scroll transformations)
-  if (headBone) {
-    // Mouse look-at applies normally without scroll fading
-    headBone.rotation.y = THREE.MathUtils.lerp(headBone.rotation.y, interp.x * 0.35, 0.08);
-    headBone.rotation.x = THREE.MathUtils.lerp(headBone.rotation.x, interp.y * 0.18, 0.08);
-  }
-
-  // 2. Parallax animations for background glass sphere
-  const bubbleL = document.querySelector('.bubble-left');
-  if (bubbleL) {
-    bubbleL.style.transform = `translateY(${-targetScroll * 160}px) rotate(${targetScroll * 15}deg)`;
-  }
-
-  // 3. Cinematic scroll reveal trigger for section 2 text
-  const revealElements = document.querySelectorAll('.text-reveal');
-  revealElements.forEach((el) => {
-    if (scrollPercent > 0.28) {
-      el.classList.add('in-view');
-    } else {
-      el.classList.remove('in-view');
-    }
+  const progress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+  document.querySelectorAll('.text-reveal').forEach(el => {
+    el.classList.toggle('in-view', progress > 0.28);
   });
-
-
-  renderer.render(scene, camera);
-}(performance.now()));
-
-// ─── Resize ────────────────────────────────────────────────────────────────
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-
+}, { passive: true });
 
 // ─── Interactive Particle Text — Manifesto Section ──────────────────────────
 const initManifestoParticles = () => {
@@ -757,21 +625,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialise the text scramble hover animation on hero section elements
   initTextScramble();
 
-  // Intercept anchor hash clicks to scroll smoothly using Lenis
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      const targetId = this.getAttribute('href');
-      const targetEl = document.querySelector(targetId);
-      if (targetEl) {
-        lenis.scrollTo(targetEl, {
-          duration: 1.4,
-          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // smooth easeOutExpo
-        });
-      }
-    });
-  });
-
   // ── Generic fade/slide observer ──────────────────────────────
   const makeObserver = (selector, threshold = 0.15) => {
     const obs = new IntersectionObserver((entries) => {
@@ -814,6 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── Footer 3D Character Rendering ─────────────────────────────────────────
+const footerRenderDisposers = [];
 const initFooter3D = () => {
   const canvas = document.getElementById('footer-canvas');
   if (!canvas) {
@@ -879,6 +733,7 @@ const initFooter3D = () => {
     model.rotation.y = -1.65; 
     
     scene.add(model);
+    canvas.dataset.ready = "true";
 
     // Play typing animation
     if (gltf.animations?.length) {
@@ -894,21 +749,27 @@ const initFooter3D = () => {
 
   const clock = new THREE.Clock();
   
-  // Render loop
+  // IntersectionObserver owns visibility. No per-frame layout polling while
+  // the user is in the scroll story, including on a reverse visit.
+  let footerVisible = false, footerFrame = 0;
   const animate = () => {
-    requestAnimationFrame(animate);
-    
-    // Only render if it's actually somewhat in view to save performance
-    const rect = canvas.getBoundingClientRect();
-    if (rect.top < window.innerHeight && rect.bottom > 0) {
-      if (mixer) mixer.update(clock.getDelta());
-      renderer.render(scene, camera);
-    } else {
-      // Just keep clock ticking
-      clock.getDelta();
-    }
+    footerFrame = 0;
+    if (!footerVisible || document.hidden) return;
+    if (mixer) mixer.update(Math.min(clock.getDelta(), .05));
+    renderer.render(scene, camera);
+    footerFrame = requestAnimationFrame(animate);
   };
-  animate();
+  const syncFooter = () => {
+    cancelAnimationFrame(footerFrame); footerFrame = 0;
+    if (footerVisible && !document.hidden) { clock.getDelta(); animate(); }
+  };
+  const visibility = new IntersectionObserver(([entry]) => { footerVisible = entry.isIntersecting; syncFooter(); });
+  visibility.observe(canvas);
+  document.addEventListener('visibilitychange', syncFooter);
+  footerRenderDisposers.push(() => {
+    cancelAnimationFrame(footerFrame); visibility.disconnect();
+    document.removeEventListener('visibilitychange', syncFooter); renderer.dispose(); draco.dispose();
+  });
 
   // Handle Resize
   window.addEventListener('resize', () => {
@@ -921,4 +782,57 @@ const initFooter3D = () => {
   });
 };
 
-initFooter3D();
+// The offscreen model and WebGL context do not compete with the scroll story.
+const footerBootObserver = new IntersectionObserver(entries => {
+  if (entries.some(entry => entry.isIntersecting)) {
+    footerBootObserver.disconnect(); initFooter3D();
+  }
+}, { rootMargin: '1200px 0px' });
+footerBootObserver.observe(document.getElementById('video-footer-root'));
+
+// Typography preview and decorative layers are independent of the SVG renderer.
+const hero = document.querySelector('.hero-section');
+if (hero) {
+  let letterIndex = 0;
+  hero.querySelectorAll('.name-word').forEach(word => {
+    const letters = [...word.textContent]; word.textContent = '';
+    letters.forEach(letter => {
+      const span = document.createElement('span'); span.textContent = letter;
+      span.className = 'name-letter'; span.style.setProperty('--letter', letterIndex++);
+      word.appendChild(span);
+    });
+  });
+  const sky = hero.querySelector('.hero-sky');
+  for (let i = 0; i < 25; i++) {
+    const star = document.createElement('i'); star.className = 'hero-star';
+    star.style.cssText = `left:${4 + (i * 37 % 92)}%;top:${35 + (i * 19 % 54)}%;animation-delay:${i * -.47}s`;
+    sky.appendChild(star);
+  }
+  for (let i = 0; i < 6; i++) {
+    const bird = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    bird.setAttribute('viewBox', '0 0 28 16'); bird.classList.add('hero-bird');
+    bird.style.cssText = `left:${7 + i * 5}%;top:${55 + i % 3 * 7}%;animation-delay:${-i * 2}s`;
+    bird.innerHTML = '<path d="M2 10Q8 2 14 9Q20 2 26 10" fill="none" stroke="var(--white)" stroke-width="1.2"/>';
+    sky.appendChild(bird);
+  }
+
+}
+
+
+const disposeJourneyDebug = installJourneyDebug();
+const debugJump = event => lenis.scrollTo(event.detail, { immediate: true, force: true });
+window.addEventListener('journey-debug-jump', debugJump);
+if (import.meta.hot) import.meta.hot.dispose(() => {
+  footerBootObserver.disconnect(); footerRenderDisposers.forEach(dispose => dispose());
+  document.removeEventListener('click', handleAnchorClick);
+  window.removeEventListener('close-projects-page', closeProjectsPage);
+  window.removeEventListener('popstate', restoreProjectsHistory);
+  window.removeEventListener('hashchange', restoreProjectsHistory);
+  mountedRoots.forEach(root => root.unmount());
+  disposeJourneyDebug(); window.removeEventListener('journey-debug-jump', debugJump);
+  window.removeEventListener('journey-contact', sayHi);
+  lenis.off('scroll', ScrollTrigger.update); gsap.ticker.remove(rafLenis);
+  reducedMotion.removeEventListener('change', syncScrollMotion); lenis.destroy();
+});
+
+if (import.meta.hot) import.meta.hot.accept(() => window.location.reload());

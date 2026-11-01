@@ -1,0 +1,5 @@
+.night-scene{--ride-bg:var(--about-ink);--ride-road:var(--about-navy);--ride-cream:var(--about-cream);--ride-amber:var(--about-amber);background:var(--ride-bg);color:var(--ride-cream)}
+.night-finish{--film-strength:1;z-index:12}
+.night-star-twinkle{animation:night-star-twinkle 7s ease-in-out infinite}
+@keyframes night-star-twinkle{0%,100%{opacity:.2}50%{opacity:.8}}
+@media(prefers-reduced-motion:reduce){.night-finish .film-grain,.night-star-twinkle{animation:none}}
