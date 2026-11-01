@@ -15,8 +15,10 @@ import { AboutStage } from '../components/ui/about-stage.jsx';
 import { WavingCharacter } from '../components/ui/waving-character.tsx';
 import { HeroSocialRail } from '../components/ui/hero-social-rail.tsx';
 import './hero-visuals.css';
+import { scrollScenesReady } from './scroll-ready';
 
-const projectsReturnOnLoad = location.hash === '#projects' || sessionStorage.getItem('returnTo') === 'projects';
+const projectsDetailOnLoad = location.pathname.replace(/\/$/, '') === '/projects' || location.hash === '#project-details';
+const projectsReturnOnLoad = !projectsDetailOnLoad && (location.hash === '#projects' || sessionStorage.getItem('returnTo') === 'projects');
 if (projectsReturnOnLoad) {
   history.scrollRestoration = 'manual';
   const app = document.getElementById('app');
@@ -83,6 +85,7 @@ const loadProjectsPage = () => {
     projectsPageLoading = null;
     window.dispatchEvent(new CustomEvent('close-projects-page'));
   });
+  return projectsPageLoading;
 };
 if (projectsPageRoot) {
   window.addEventListener('open-projects-page', loadProjectsPage);
@@ -141,17 +144,7 @@ const landAtProjects = () => {
   const app = document.getElementById('app');
   if (app) { app.getAnimations().filter(animation => animation.id === 'projects-return').forEach(animation => animation.cancel()); app.style.opacity = '0'; }
   projectsLanding = (async () => {
-    await document.fonts.ready;
-    await new Promise(resolve => {
-      const ready = () => {
-        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const heroReady = reduced || !document.getElementById('character-root') || ScrollTrigger.getById('hero-journey');
-        const rideReady = reduced || !document.getElementById('journey-root') || ScrollTrigger.getById('journey-ride');
-        if (heroReady && rideReady) resolve();
-        else requestAnimationFrame(ready);
-      };
-      requestAnimationFrame(ready);
-    });
+    await scrollScenesReady();
     ScrollTrigger.refresh();
     lenis.resize();
     const target = document.getElementById('projects');
@@ -174,17 +167,34 @@ const landAtProjects = () => {
   return projectsLanding;
 };
 
-// Other initial anchors retain their existing behavior.
-if (projectsReturnOnLoad) {
-  landAtProjects();
-} else if (window.location.hash) {
-  setTimeout(() => {
-    const target = document.querySelector(window.location.hash);
-    if (target) {
-      lenis.scrollTo(target, { immediate: true });
-    }
-  }, 100);
-}
+// Native restoration must not jump into a page whose pin spacers don't exist yet.
+const finishBoot = () => {
+  clearTimeout(window.__portfolioBootTimeout);
+  document.documentElement.classList.remove('site-booting');
+};
+const rememberHomeScroll = () => {
+  if (document.getElementById('app')?.style.display === 'none') return;
+  try { sessionStorage.setItem('portfolio:scroll', String(window.scrollY)); } catch {}
+};
+window.addEventListener('pagehide', rememberHomeScroll);
+scrollScenesReady().then(async () => {
+  if (mainDisposed) return;
+  if (projectsDetailOnLoad) await loadProjectsPage();
+  else if (projectsReturnOnLoad) await landAtProjects();
+  else {
+    ScrollTrigger.refresh(); lenis.resize();
+    const hash = location.hash;
+    const anchor = hash && !projectsDetailOnLoad ? document.getElementById(hash.slice(1)) : null;
+    const story = ScrollTrigger.getById('hero-journey');
+    const destination = hash === '#about' && story?.animation && !matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? story.start + (story.end - story.start) * story.animation.labels['beat-a'] / story.animation.duration()
+      : anchor || (projectsDetailOnLoad ? 0 : window.__portfolioBoot?.scrollY || 0);
+    lenis.scrollTo(destination, { immediate: true, force: true });
+    ScrollTrigger.update();
+    ScrollTrigger.getAll().forEach(trigger => trigger.getTween()?.progress(1));
+  }
+  requestAnimationFrame(finishBoot);
+}).catch(finishBoot);
 
 // Stop Lenis when projects page opens so its scroll works freely.
 // Also override the .lenis-stopped { overflow: hidden } rule that Lenis
@@ -705,6 +715,7 @@ const debugJump = event => lenis.scrollTo(event.detail, { immediate: true, force
 window.addEventListener('journey-debug-jump', debugJump);
 if (import.meta.hot) import.meta.hot.dispose(() => {
   mainDisposed = true;
+  window.removeEventListener('pagehide', rememberHomeScroll);
   window.removeEventListener('open-projects-page', loadProjectsPage);
   document.removeEventListener('click', handleAnchorClick);
   window.removeEventListener('close-projects-page', closeProjectsPage);

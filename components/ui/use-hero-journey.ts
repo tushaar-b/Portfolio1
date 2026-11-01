@@ -1,4 +1,5 @@
 import { useLayoutEffect, type RefObject } from 'react';
+import { sceneReady } from '../../src/scroll-ready';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { buildAboutMotion, ABOUT_MOTION } from './about-motion';
@@ -395,6 +396,8 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
         });
       }, hero);
       ScrollTrigger.refresh();
+      journey.dataset.storyReady = 'true';
+      sceneReady('hero');
     };
 
     Promise.all([document.fonts.ready, resolve.current.whenReady]).then(() => {

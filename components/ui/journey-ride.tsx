@@ -1,4 +1,5 @@
 import React,{useLayoutEffect,useRef,useId} from 'react';
+import { sceneReady } from '../../src/scroll-ready';
 import gsap from 'gsap';
 import {ScrollTrigger} from 'gsap/ScrollTrigger';
 import {checkpoints as defaultCheckpoints,type JourneyCheckpoint} from './journey-checkpoints';
@@ -50,6 +51,7 @@ export function JourneyRide({vehicle='auto',checkpoints=defaultCheckpoints}:{veh
      const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){gsap.to(entry.target,{opacity:1,duration:.25,overwrite:true});observer.unobserve(entry.target);}}),{threshold:.15});
      gsap.set(cards,{opacity:.55});cards.forEach(c=>observer.observe(c));
      root.dataset.motion='reduced';
+     sceneReady('ride');
      return()=>{observer.disconnect();gsap.killTweensOf(cards);delete root.dataset.motion;};
     }
     const stage=$('.journey-stage'),world=$('.world'),far=$('.ride-far'),mid=$('.ride-mid');
@@ -231,6 +233,7 @@ export function JourneyRide({vehicle='auto',checkpoints=defaultCheckpoints}:{veh
     window.addEventListener('keydown',key,true);document.addEventListener('visibilitychange',visibility);
     const fonts=()=>{if(!disposed)ScrollTrigger.refresh();};document.fonts.ready.then(fonts);
     render();root.dataset.motion='ride';
+    sceneReady('ride');
     return()=>{window.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);control.current=null;delete(root as any).__ride;delete root.dataset.motion;delete root.dataset.parked;delete root.dataset.traveling;};
    });
    return()=>mm.revert();

@@ -1,4 +1,5 @@
 import React, { useLayoutEffect, useRef } from 'react';
+import { sceneReady } from '../../src/scroll-ready';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { NightStars, NightFinish } from './night-scenery';
@@ -115,6 +116,7 @@ export const GoodDesignSection = () => {
             onRefreshInit: measure, onRefresh: render,
           });
         });
+        sceneReady('focus');
         return () => mm.revert();
       });
     });

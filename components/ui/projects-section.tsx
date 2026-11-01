@@ -52,12 +52,12 @@ export const ProjectsSection: React.FC = () => {
     <motion.p className="projects-night-label" {...entrance(0)}>Curious?... Check out my</motion.p>
     <div className="projects-word">
       <span className="projects-letters">{Array.from('PR').map((letter, i) => <motion.span key={i} {...entrance(i + 1)}>{letter}</motion.span>)}</span>
-      <motion.div className="projects-folder-link" onClick={openProjects}
+      <motion.a className="projects-folder-link" href="/projects" aria-label="View projects by Tushaar Bharara" onClick={event => { event.preventDefault(); openProjects(); }}
         initial={reduced ? false : { opacity: 0, scale: .85 }}
         animate={visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: .85 }}
         transition={{ duration: reduced ? 0 : .6, delay: reduced ? 0 : .12, ease: t => 1 + 2.6 * Math.pow(t - 1, 3) + 1.6 * Math.pow(t - 1, 2) }}>
         <FolderIcon reduced={reduced}/>
-      </motion.div>
+      </motion.a>
       <span className="projects-letters">{Array.from('JECTS').map((letter, i) => <motion.span key={i} {...entrance(i + 3)}>{letter}</motion.span>)}</span>
     </div>
     <NightFinish/>

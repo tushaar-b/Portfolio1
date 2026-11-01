@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { NightStars, NightCloud, NightHills, NightLamp, NightRoad, NightFinish } from './night-scenery';
 import './projects-page.css';
 import { ProjectImage } from './project-image';
+import { setPageMetadata } from '../../src/seo-meta';
 
 // ── Project Data ─────────────────────────────────────────────────────────────
 const projects = [
@@ -129,6 +130,7 @@ const ImageSlideshow = ({ images, title }: { images: string[], title: string }) 
 // ── Main Component ───────────────────────────────────────────────────────────
 export const ProjectsPage: React.FC = () => {
   const [visible, setVisible] = useState(false);
+  useEffect(() => { setPageMetadata(visible); }, [visible]);
   const reduced = !!useReducedMotion();
   const railRef = useRef<HTMLDivElement>(null);
   const roadId = `detail-road-${useId().replace(/:/g, '')}`;
@@ -180,12 +182,15 @@ export const ProjectsPage: React.FC = () => {
     };
     const handler = () => {
       history.scrollRestoration = 'manual';
-      history.replaceState({ ...history.state, projectsDetail: false }, '', '/#projects');
-      history.pushState({ ...history.state, projectsDetail: true }, '', '/#project-details');
+      if (location.pathname.replace(/\/$/, '') === '/projects') history.replaceState({ ...history.state, projectsDetail: true }, '', '/projects');
+      else {
+        history.replaceState({ ...history.state, projectsDetail: false }, '', '/#projects');
+        history.pushState({ ...history.state, projectsDetail: true }, '', '/projects');
+      }
       showPage();
     };
     const pop = () => {
-      if (history.state?.projectsDetail && location.hash === '#project-details') {
+      if (location.pathname.replace(/\/$/, '') === '/projects' || (history.state?.projectsDetail && location.hash === '#project-details')) {
         showPage();
         document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
