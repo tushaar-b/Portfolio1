@@ -677,53 +677,116 @@ const initFooter3D = () => {
   }
 
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const frame = canvas.parentElement;
+  const palette = getComputedStyle(canvas.closest('.footer-night'));
+  const color = token => palette.getPropertyValue(token).trim();
+  const navy = color('--about-ink'), amber = color('--about-amber'), cream = color('--cream');
+  renderer.setClearColor(navy, 0);
+  renderer.setSize(frame.clientWidth, frame.clientHeight, false);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = .82;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const scene = new THREE.Scene();
   
   // Set camera to frame the character sitting at the desk from a side angle
-  const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(35, frame.clientWidth / frame.clientHeight, 0.1, 1000);
   camera.position.set(-18, 12, 14); // Positioned to the left side (looking at character facing right)
   camera.lookAt(0, 8, 0); // Looking at the character's face/chest level
 
   // Lighting
-  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.0);
-  keyLight.position.set(5, 15, 10);
+  scene.add(new THREE.AmbientLight(navy, .8));
+  const keyLight = new THREE.DirectionalLight(amber, 1.3);
+  keyLight.position.set(-10, 18, 10);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.set(1024, 1024);
+  keyLight.shadow.camera.left = -14; keyLight.shadow.camera.right = 14;
+  keyLight.shadow.camera.top = 18; keyLight.shadow.camera.bottom = -14;
+  keyLight.shadow.normalBias = .03; keyLight.shadow.radius = 4;
   scene.add(keyLight);
 
-  const fillLight = new THREE.DirectionalLight(0x3366ff, 1.5);
-  fillLight.position.set(-5, 5, -5);
+  const fillLight = new THREE.DirectionalLight(color('--about-skin'), 1.1);
+  fillLight.position.set(9, 10, -8);
   scene.add(fillLight);
 
-  let mixer;
+  // Draw each monitor texture once. Blinking swaps the cached cursor variant.
+  const screenCanvas = document.createElement('canvas');
+  screenCanvas.width = 256; screenCanvas.height = 160;
+  const screenContext = screenCanvas.getContext('2d');
+  screenContext.fillStyle = navy; screenContext.fillRect(0, 0, 256, 160);
+  [164, 116, 188, 142, 98, 174, 130, 194, 108].forEach((width, i) => {
+    screenContext.fillStyle = i % 3 === 0 ? amber : cream;
+    screenContext.globalAlpha = i % 3 === 0 ? .85 : .65;
+    screenContext.fillRect(i % 2 ? 30 : 18, 16 + i * 13, width, 3);
+  });
+  screenContext.globalAlpha = 1;
+  const cursorCanvas = document.createElement('canvas');
+  cursorCanvas.width = 256; cursorCanvas.height = 160;
+  const cursorContext = cursorCanvas.getContext('2d');
+  cursorContext.drawImage(screenCanvas, 0, 0);
+  cursorContext.fillStyle = amber; cursorContext.fillRect(18, 139, 8, 10);
+  const screenTextures = [screenCanvas, cursorCanvas].map(source => {
+    const texture = new THREE.CanvasTexture(source);
+    texture.colorSpace = THREE.SRGBColorSpace; texture.flipY = false;
+    return texture;
+  });
+  const screenMaterials = [], screenLights = [];
+  const ownedMaterials = new Set();
+  let mixer, model, disposed = false, monitorLevel = 0, lastCursor = -1;
+  const modelBox = new THREE.Box3();
+  const viewDirection = new THREE.Vector3(-18, 4, 14).normalize();
+  const fitCamera = () => {
+    if (!model) return;
+    model.updateMatrixWorld(true);
+    modelBox.setFromObject(model);
+    const center = modelBox.getCenter(new THREE.Vector3());
+    const sphere = modelBox.getBoundingSphere(new THREE.Sphere());
+    const halfFov = THREE.MathUtils.degToRad(camera.fov / 2);
+    const limitingFov = Math.min(halfFov, Math.atan(Math.tan(halfFov) * camera.aspect));
+    camera.position.copy(center).addScaledVector(viewDirection, sphere.radius / Math.sin(limitingFov) * 1.06);
+    camera.lookAt(center);
+    keyLight.target.position.copy(center); scene.add(keyLight.target);
+  };
   const loader = new GLTFLoader();
   const draco = new DRACOLoader();
   draco.setDecoderPath('/draco/');
   loader.setDRACOLoader(draco);
 
   loader.load('/models/character.glb', (gltf) => {
-    const model = gltf.scene;
+    if (disposed) return;
+    model = gltf.scene;
     
     model.traverse((node) => {
       if (node.isMesh) {
-        // Keep EVERYTHING visible so we see the desk, chair, monitor, etc.
         node.visible = true;
-        
-        // Optional: Keep the shirt black like in the hero
-        const normName = node.name.toLowerCase().replace(/[\._]/g, '');
-        if (normName.startsWith("cube006")) {
-          const mats = Array.isArray(node.material) ? node.material : [node.material];
-          mats.forEach(mat => {
-            mat.transparent = false;
-            mat.opacity = 1;
-            if (mat.color) mat.color.set("#000000");
-          });
-        }
+        node.castShadow = true; node.receiveShadow = true;
+        node.geometry.computeBoundingBox();
+        const extent = node.geometry.boundingBox.getSize(new THREE.Vector3());
+        const dimensions = [extent.x, extent.y, extent.z].sort((a, b) => a - b);
+        const thin = dimensions[0] < dimensions[2] * .12;
+        const recolor = original => {
+          if (!original.color || original.map || original.lightMap) return original;
+          const material = original.clone(); ownedMaterials.add(material);
+          const name = `${node.name} ${original.name}`.toLowerCase();
+          const blueScreen = thin && original.color.b > original.color.r * 1.8 && original.color.b > original.color.g * 1.2;
+          if ((/screen|display/.test(name) || blueScreen) && material.emissive) {
+            material.color.set(cream); material.map = screenTextures[0];
+            material.emissive.set(cream); material.emissiveMap = screenTextures[0]; material.emissiveIntensity = 0;
+            material.roughness = .6; screenMaterials.push(material);
+            const light = new THREE.PointLight(amber, 0, 12, 2);
+            light.position.copy(node.geometry.boundingBox.getCenter(new THREE.Vector3()));
+            light.position.z += .4; node.add(light); screenLights.push(light);
+          } else if (/hoodie|shirt|sweater|cube[._]?006/.test(name)) material.color.set(color('--inner'));
+          else if (/trouser|pants|jeans/.test(name)) material.color.set(color('--about-navy'));
+          else if (/(^|[^a-z])(cap|hat)([^a-z]|$)/.test(name)) material.color.set(cream);
+          else if (/desktop|tabletop|desk.*top|table.*top/.test(name)) material.color.set(cream);
+          else if (/chair|seat/.test(name)) material.color.set(amber);
+          return material;
+        };
+        node.material = Array.isArray(node.material) ? node.material.map(recolor) : recolor(node.material);
       }
     });
 
@@ -733,6 +796,7 @@ const initFooter3D = () => {
     model.rotation.y = -1.65; 
     
     scene.add(model);
+    fitCamera();
     canvas.dataset.ready = "true";
 
     // Play typing animation
@@ -755,7 +819,17 @@ const initFooter3D = () => {
   const animate = () => {
     footerFrame = 0;
     if (!footerVisible || document.hidden) return;
-    if (mixer) mixer.update(Math.min(clock.getDelta(), .05));
+    const delta = Math.min(clock.getDelta(), .05);
+    if (mixer) mixer.update(delta);
+    const monitorOn = canvas.dataset.monitor === 'on';
+    monitorLevel = canvas.dataset.reducedMotion === 'true' ? (monitorOn ? 1 : 0) : Math.min(monitorOn ? 1 : 0, monitorLevel + delta * 1.5);
+    screenMaterials.forEach(material => { material.emissiveIntensity = monitorLevel * .6; });
+    screenLights.forEach(light => { light.intensity = monitorLevel * 3; });
+    const cursor = canvas.dataset.reducedMotion === 'true' ? 1 : Math.floor(performance.now() / 900) % 2;
+    if (cursor !== lastCursor) {
+      lastCursor = cursor;
+      screenMaterials.forEach(material => { material.map = screenTextures[cursor]; material.emissiveMap = screenTextures[cursor]; });
+    }
     renderer.render(scene, camera);
     footerFrame = requestAnimationFrame(animate);
   };
@@ -767,19 +841,27 @@ const initFooter3D = () => {
   visibility.observe(canvas);
   document.addEventListener('visibilitychange', syncFooter);
   footerRenderDisposers.push(() => {
+    disposed = true;
     cancelAnimationFrame(footerFrame); visibility.disconnect();
-    document.removeEventListener('visibilitychange', syncFooter); renderer.dispose(); draco.dispose();
+    resizeObserver.disconnect();
+    document.removeEventListener('visibilitychange', syncFooter);
+    mixer?.stopAllAction(); if (model) mixer?.uncacheRoot(model);
+    renderer.dispose(); draco.dispose();
+    ownedMaterials.forEach(material => material.dispose()); screenTextures.forEach(texture => texture.dispose());
   });
 
   // Handle Resize
-  window.addEventListener('resize', () => {
-    if (!canvas) return;
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    renderer.setSize(w, h);
+  const resizeObserver = new ResizeObserver(() => {
+    const w = frame.clientWidth;
+    const h = frame.clientHeight;
+    if (!w || !h) return;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
+    fitCamera();
   });
+  resizeObserver.observe(frame);
 };
 
 // The offscreen model and WebGL context do not compete with the scroll story.

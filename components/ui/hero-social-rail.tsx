@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { socials } from '../../src/socials';
 import './hero-social-rail.css';
 
-function SocialIcon({ id }: { id: string }) {
+export function SocialIcon({ id }: { id: string }) {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     {id === 'linkedin' ? <><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 10V17M11 17V10M11 13C11 9 17 9 17 13V17"/><circle cx="7" cy="7" r=".8" fill="currentColor" stroke="none"/></> : id === 'github' ? <><path d="M9 19C5 20 5 17 3 17M15 22V18Q15 16 14 15C18 15 21 13 21 9Q21 6 19 5Q20 3 19 1Q16 1 14 3Q12 2 10 3Q8 1 5 1Q4 3 5 5Q3 6 3 9C3 13 6 15 10 15Q9 16 9 18V22"/></> : <><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M3 6L12 13L21 6"/></>}
   </svg>;

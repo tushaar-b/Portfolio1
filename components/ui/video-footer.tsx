@@ -1,119 +1,46 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { NightStars, NightCloud, NightFinish } from './night-scenery';
+import { SocialIcon } from './hero-social-rail';
+import { socials } from '../../src/socials';
+import './video-footer.css';
 
 export const VideoFooter = () => {
-  return (
-    <footer style={{
-      width: "100%",
-      height: "100vh",
-      position: "relative",
-      overflow: "hidden",
-      backgroundColor: "#050302", // Dark base
-      color: "#ffcda3", // Peach color
-      fontFamily: "'Outfit', sans-serif"
-    }}>
-
-      {/* Local 3D Scene Background */}
-      <div style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        zIndex: 1,
-      }}>
-        <canvas id="footer-canvas" style={{ width: "100%", height: "100%", display: "block" }}></canvas>
-      </div>
-
-      {/* Vignette Overlay for smooth edges and better text readability */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        background: "radial-gradient(circle at center, transparent 30%, #050302 100%)",
-        zIndex: 2,
-        pointerEvents: "none"
-      }} />
-
-      {/* Foreground Content */}
-      <div style={{
-        position: "relative",
-        zIndex: 3,
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        padding: "3vw 4vw",
-        pointerEvents: "none" // Let clicks pass to the 3D scene if interactive
-      }}>
-        {/* Top Header Row Removed */}
-
-        {/* Middle Tech Stack Row */}
-        <div style={{
-          alignSelf: "flex-end",
-          textAlign: "right",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.6rem",
-          fontSize: "0.85rem",
-          fontWeight: 600,
-          opacity: 0.9,
-          marginTop: "10vh",
-          marginRight: "2vw"
-        }}>
-          <span style={{ opacity: 0.5, marginBottom: "0.5rem", fontWeight: 500 }}>Website made using:</span>
-          <span>React</span>
-          <span>Vite</span>
-          <span>Framer Motion</span>
-          <span>Three.js</span>
-          <span>Lenis Scroll</span>
-        </div>
-
-        {/* Bottom Typography Row */}
-        <div style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          marginTop: "auto",
-          gap: "2rem"
-        }}>
-          <div style={{ display: "flex", flexDirection: "column", flexShrink: 1 }}>
-            <h1 style={{
-              fontSize: "clamp(3rem, 11vw, 15rem)",
-              fontWeight: 700,
-              lineHeight: 0.8,
-              margin: 0,
-              letterSpacing: "-0.04em",
-              color: "#ffdfc4",
-              whiteSpace: "nowrap"
-            }}>
-              Tushaar
-            </h1>
-            <span style={{ fontSize: "clamp(0.75rem, 1.5vw, 1rem)", opacity: 0.8, marginTop: "1rem", fontWeight: 500 }}>
-              Aspiring Web Developer 2026
-            </span>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 1 }}>
-            <h1 style={{
-              fontSize: "clamp(3rem, 11vw, 15rem)",
-              fontWeight: 700,
-              lineHeight: 0.8,
-              margin: 0,
-              letterSpacing: "-0.04em",
-              color: "#ffdfc4",
-              whiteSpace: "nowrap"
-            }}>
-              Bharara
-            </h1>
-            <span style={{ fontSize: "clamp(0.75rem, 1.5vw, 1rem)", opacity: 0.8, marginTop: "1rem", fontWeight: 500 }}>
-              Available for Opportunities
-            </span>
-          </div>
-        </div>
-
-      </div>
-    </footer>
-  );
+  const ref = useRef<HTMLElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const inView = useInView(ref, { once: true, amount: .3 });
+  const reduced = !!useReducedMotion();
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  const copyEmail = async (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    event.preventDefault();
+    try {
+      await navigator.clipboard.writeText(href.slice(7));
+      if (timer.current) clearTimeout(timer.current);
+      setCopied(true); timer.current = setTimeout(() => setCopied(false), 1800);
+    } catch { window.location.href = href; }
+  };
+  const shown = inView || reduced;
+  return <footer ref={ref} className="footer-night night-scene">
+    <svg className="footer-stars" aria-hidden="true"><g><NightStars count={13} twinkle/></g><g className="footer-stars-extra" transform="translate(24 54)"><NightStars count={12} twinkle/></g><NightCloud className="footer-cloud" x="17%" y="20%" width="180" height="60"/></svg>
+    <div className="footer-floor-glow" aria-hidden="true"/>
+    <h1 className="footer-name" aria-label="Tushaar Bharara">{['TUSHAAR', 'BHARARA'].map((word, wi) => <React.Fragment key={word}>{wi > 0 && ' '}<span className="footer-name-word">{Array.from(word).map((letter, i) => <motion.span key={i} aria-hidden="true"
+      initial={reduced ? false : { opacity: 0, y: 40 }} animate={shown ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{ duration: reduced ? 0 : .6, delay: reduced ? 0 : (wi * 7 + i) * .03, ease: [0.215, .61, .355, 1] }}>{letter}</motion.span>)}</span></React.Fragment>)}</h1>
+    <motion.div className="footer-model"
+      initial={reduced ? false : { opacity: 0, scale: .96 }} animate={shown ? { opacity: 1, scale: 1 } : { opacity: 0, scale: .96 }}
+      transition={{ duration: reduced ? 0 : .8, delay: reduced ? 0 : 1, ease: [0.215, .61, .355, 1] }}
+      onAnimationComplete={() => { if (shown && canvasRef.current) canvasRef.current.dataset.monitor = 'on'; }}>
+      <canvas ref={canvasRef} id="footer-canvas" data-reduced-motion={String(reduced)} />
+    </motion.div>
+    <div className="footer-made"><span className="footer-made-label">Website made using:</span>{['React', 'Vite', 'Framer Motion', 'Three.js', 'Lenis Scroll'].map(item => <span className="footer-made-item" key={item}>{item}</span>)}</div>
+    <nav className="footer-socials" aria-label="Footer social links">{socials.map(social => <a key={social.id} href={social.href}
+      target={social.id === 'email' ? undefined : '_blank'} rel={social.id === 'email' ? undefined : 'noopener noreferrer'}
+      aria-label={social.id === 'email' ? 'Email tushaar.bharara@gmail.com' : `Open ${social.label} profile`}
+      title={social.id === 'email' ? social.href.slice(7) : social.label}
+      onClick={social.id === 'email' ? event => copyEmail(event, social.href) : undefined}><SocialIcon id={social.id}/>{social.label}</a>)}<span className="footer-copy-toast" role="status" aria-live="polite">{copied ? 'Email copied' : ''}</span></nav>
+    <div className="footer-taglines"><span>Aspiring Web Developer 2026</span><span className="footer-available"><i aria-hidden="true"/>Available for Opportunities</span></div>
+    <NightFinish/>
+  </footer>;
 };
