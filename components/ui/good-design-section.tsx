@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { NightStars, NightFinish } from './night-scenery';
 import './good-design-section.css';
+import { liteMode, mobileMode } from '../../src/mobile-mode';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -40,12 +41,36 @@ export const GoodDesignSection = () => {
           const cream = $('.focus-finder-cream'), amber = $('.focus-finder-amber');
           const cross = $('.focus-cross'), label = $('.focus-af');
           const glow = $('.focus-glow'), subtitle = $('.focus-subtitle'), underline = $('.focus-underline');
-          if (media.conditions!.reduce) {
+          if ((!mobileMode && liteMode) || media.conditions!.reduce) {
             gsap.set(words, { opacity: 1, filter: 'blur(0px)', y: 0 });
             gsap.set(subtitle, { opacity: 1, y: 0 });
             gsap.set(underline, { scaleX: 1, transformOrigin: '0 50%' });
             gsap.set(frame, { opacity: 0 });
             gsap.set(glow, { opacity: 0 });
+            return;
+          }
+
+          if (mobileMode) {
+            gsap.set(words, { opacity: .2, y: 18 });
+            gsap.set(subtitle, { opacity: 0, y: 12 });
+            gsap.set(glow, { opacity: 0 });
+            gsap.set(frame, { opacity: 1, xPercent: -50, yPercent: -50, scale: 1.4 });
+            const measure = () => {
+              const word = words[3], box = word.getBoundingClientRect(), bounds = stage.getBoundingClientRect();
+              gsap.set(frame, { x: box.left - bounds.left + box.width / 2, y: box.top - bounds.top + box.height / 2 });
+              const w = word.offsetWidth + 32, h = word.offsetHeight + 24;
+              frame.style.width = `${w}px`; frame.style.height = `${h}px`;
+              root.querySelectorAll('.focus-brackets').forEach(svg => svg.setAttribute('viewBox', `0 0 ${w} ${h}`));
+              root.querySelectorAll('.focus-brackets path').forEach(path => path.setAttribute('d', `M2 18V2H18M${w-18} 2H${w-2}V18M${w-2} ${h-18}V${h-2}H${w-18}M18 ${h-2}H2V${h-18}`));
+            };
+            measure();
+            const timeline = gsap.timeline({ paused: true }).to(words, { opacity: 1, y: 0, stagger: .12, duration: .4 })
+              .to(frame, { scale: 1, duration: .5 }, .3)
+              .to(subtitle, { opacity: 1, y: 0, duration: .3 }, .8)
+              .to(underline, { scaleX: 1, duration: .3 }, .8);
+            ScrollTrigger.create({ id: 'focus-statement', trigger: root, animation: timeline,
+              start: 'top top', end: () => `+=${stage.clientHeight * 1.6}`, pin: stage,
+              pinType: 'transform', scrub: true, invalidateOnRefresh: true, onRefreshInit: measure });
             return;
           }
 

@@ -1,9 +1,10 @@
 import Matter from 'matter-js';
 import { techStack, type TechItem } from './tech-stack-data';
+import { mobileMode } from '../../src/mobile-mode';
 
 // This module, Matter, and the logo paths are fetched only near the section.
 export function mountCargo(section: HTMLElement, stage: HTMLDivElement, canvas: HTMLCanvasElement, tooltip: HTMLOutputElement, reduced: boolean) {
-  const mobile = matchMedia('(max-width:639px)').matches;
+  const mobile = mobileMode;
   const engine = Matter.Engine.create({ enableSleeping: true });
   const world = engine.world;
   const palette = getComputedStyle(section);
@@ -79,7 +80,7 @@ export function mountCargo(section: HTMLElement, stage: HTMLDivElement, canvas: 
   }
   const spawn = () => {
     if (dropped || disposed) return; dropped = true;
-    const list = techStack.flatMap(tech => Array.from({ length: tech.copies }, () => tech)).slice(0, mobile ? 24 : 36);
+    const list = techStack.flatMap(tech => Array.from({ length: tech.copies }, () => tech)).slice(0, mobile ? 20 : 36);
     let pileX = 0, pileBottom = floorY(), rowHeight = 0;
     const create = (tech: TechItem, index: number) => {
       if (disposed) return;

@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useId } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { NightStars, NightCloud, NightLamp, NightHills, NightRoad, NightFinish } from './night-scenery';
 import './tech-stack.css';
+import { mobileMode } from '../../src/mobile-mode';
 
 const headingText = 'Throw them around!';
 export const TechStackSection = () => {
@@ -11,10 +12,10 @@ export const TechStackSection = () => {
   const roadId = `cargo-road-${useId().replace(/:/g, '')}`;
   const isInView = useInView(sectionRef, { once: true, amount: .3 });
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [mobile, setMobile] = useState(() => matchMedia('(max-width:639px)').matches);
+  const [mobile, setMobile] = useState(() => mobileMode || matchMedia('(max-width:639px)').matches);
   useEffect(() => {
     const reduce = matchMedia('(prefers-reduced-motion: reduce)'), phone = matchMedia('(max-width:639px)');
-    const sync = () => { setReduced(reduce.matches); setMobile(phone.matches); };
+    const sync = () => { setReduced(reduce.matches); setMobile(mobileMode || phone.matches); };
     reduce.addEventListener('change', sync); phone.addEventListener('change', sync);
     return () => { reduce.removeEventListener('change', sync); phone.removeEventListener('change', sync); };
   }, []);

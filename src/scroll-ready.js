@@ -17,5 +17,16 @@ export function scrollScenesReady() {
   if (document.getElementById('character-root')) names.push('hero');
   if (document.getElementById('journey-root')) names.push('ride');
   if (document.getElementById('good-design-root')) names.push('focus');
-  return Promise.all([document.fonts.ready, ...names.map(waitForScene)]);
+  const images = Array.from(document.images)
+    .filter(image => image.loading !== 'lazy' && !image.complete)
+    .map(image => new Promise(resolve => {
+      const done = () => {
+        image.removeEventListener('load', done);
+        image.removeEventListener('error', done);
+        resolve();
+      };
+      image.addEventListener('load', done);
+      image.addEventListener('error', done);
+    }));
+  return Promise.all([document.fonts.ready, ...images, ...names.map(waitForScene)]);
 }

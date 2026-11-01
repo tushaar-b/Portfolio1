@@ -155,3 +155,144 @@ body:has(#hero-journey .next-screen:not([inert])) #film-root .film-vignette { ba
 
 /* The real opening keeps its dark fill before the background-color segment. */
 #hero-journey .hero-section { --dive-interior:var(--inner); }
+
+/* Mobile is decided before paint, including large touch-only screens. */
+html, body { background:#12172B; }
+html.mobile body section { background-color:#12172B; }
+html.mobile #hero-journey { margin:0; padding:0; background:var(--bg-hero); }
+html.mobile #hero-journey .hero-section {
+  --portrait-size:125.45vw;
+  --portrait-shift:0px;
+  --char-top-offset:52svh;
+  --name-size:clamp(44px,14vw,76px);
+  height:100vh; height:100svh;
+  min-height:100vh; min-height:100svh;
+  width:100%; margin:0; padding:0; border:0; border-radius:0; outline:none;
+  animation:none; translate:none;
+}
+html.mobile #hero-journey .journey-scene {
+  padding-top:14vh; padding-top:14svh;
+  background:var(--bg-hero); filter:none;
+}
+html.mobile #hero-journey .hero-name {
+  position:relative; inset:auto; transform:none; width:100%; height:auto; margin:0;
+  display:flex; flex-direction:column; align-items:center; gap:0;
+  font-size:clamp(44px,14vw,76px); line-height:.95; letter-spacing:.01em;
+}
+html.mobile #hero-journey .hero-subtitle {
+  position:relative; inset:auto; margin:14px 0 0; width:100%;
+  display:flex; justify-content:center; align-items:center; gap:.5em;
+  font-size:clamp(14px,4vw,24px); line-height:1.2; white-space:nowrap;
+  color:var(--periwinkle);
+}
+html.mobile #hero-journey .hero-subtitle span + span::before { content:'·'; margin-right:.5em; }
+html.mobile #hero-journey .character-stage { left:50%; transform:translateX(-50%); }
+/* Bring the waving hand inside the viewport while keeping the head centered. */
+html.mobile #hero-journey #character-svg #hand { transform:translateX(-110px); }
+html.mobile #hero-journey .hero-nav { inset:calc(16px + env(safe-area-inset-top)) 16px auto; font-size:16px; z-index:10; }
+html.mobile #hero-journey :is(.availability,.hero-nav-links,.hero-ruler,#hero-social-root,.hero-sky) { display:none; }
+html.mobile #hero-journey .hero-menu { display:block; text-transform:uppercase; }
+html.mobile #hero-journey .hero-menu summary { list-style:none; min-height:36px; display:flex; align-items:center; cursor:pointer; }
+html.mobile #hero-journey .hero-menu summary::-webkit-details-marker { display:none; }
+html.mobile #hero-journey .hero-menu[open] {
+  position:absolute; top:0; right:0; width:min(280px,calc(100vw - 32px));
+  padding:0 16px 16px; background:var(--inner); border-radius:0;
+}
+html.mobile #hero-journey .hero-menu[open] summary { justify-content:flex-end; }
+html.mobile #hero-journey .hero-menu > a { display:block; padding:12px 0; background:transparent; }
+html.mobile #hero-journey .hero-menu-socials .hero-social-rail { position:static; display:flex; transform:none; padding:12px 0 0; width:auto; }
+html.mobile #hero-journey .hero-menu-socials .hero-social-items { display:flex; flex-direction:row; gap:12px; }
+html.mobile #hero-journey .hero-menu-socials :is(.hero-social-label,.hero-social-line,.hero-social-tooltip) { display:none; }
+html.mobile #hero-journey .hero-scroll {
+  left:16px; bottom:calc(16px + env(safe-area-inset-bottom)); height:36px;
+  display:flex; align-items:center; white-space:nowrap; font-size:clamp(9px,2.8vw,13px); letter-spacing:0;
+}
+html.mobile #hero-journey .experiment-toggle {
+  right:16px; bottom:calc(16px + env(safe-area-inset-bottom));
+  height:36px; padding:0 9px; gap:6px; font-size:clamp(9px,2.8vw,13px); letter-spacing:0; white-space:nowrap;
+}
+html.mobile #hero-journey .experiment-toggle::before { display:none; }
+html.mobile #hero-journey .experiment-track { width:26px; height:16px; }
+html.mobile #hero-journey .experiment-thumb { width:10px; height:10px; }
+html.mobile #hero-journey .experiment-toggle[aria-checked="true"] .experiment-thumb { transform:translateX(9px); }
+html.mobile #hero-journey .next-screen {
+  inset:0; width:100%; height:100vh; height:100svh;
+  min-height:100vh; min-height:100svh; margin:0; border:0; border-radius:0;
+  padding:6svh 7vw; background:var(--pink);
+  opacity:var(--mobile-headline-opacity,0) !important;
+}
+
+/* Mobile keeps only scroll-owned transforms and one static grain tile. */
+html.mobile body *, html.mobile body *::before, html.mobile body *::after {
+  filter:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+  mix-blend-mode:normal !important; animation:none !important;
+}
+html.mobile body *:not([style*="will-change:"]) { will-change:auto !important; }
+html.mobile body::after {
+  content:''; position:fixed; inset:0; z-index:70; pointer-events:none; opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath filter='url(%23n)' opacity='.8' d='M0 0h128v128H0z'/%3E%3C/svg%3E");
+}
+html.mobile #hero-journey .tech-tile { width:52px; height:52px; }
+html.mobile #hero-journey .tech-tile span { border-radius:12px; font-size:15px; box-shadow:none; }
+html.mobile #hero-journey :is(#head-tunnel,#head-opening-glow) { display:none; }
+html.mobile #about-root { position:relative; inset:auto; margin:0; pointer-events:auto; background:var(--about-mist); }
+html.mobile #about-root :is(.about-sequence,.about-viewport) { position:relative; inset:auto; overflow:hidden; pointer-events:auto; background:var(--about-mist); }
+html.mobile #about-root .about-viewport { padding-top:39svh; }
+html.mobile #about-root :is(.about-iris,.about-curtains,.about-exit,.about-scroll-cue) { display:none; }
+html.mobile #about-root :is(.about-stage-arch,.about-ray-window) { opacity:1; background:var(--about-amber); }
+html.mobile #about-root .about-character-button { top:6svh; bottom:auto; pointer-events:none; }
+html.mobile #about-root .about-story-viewport { position:relative; inset:auto; margin:0; width:100%; padding:24px 7vw 48px; }
+html.mobile #about-root .about-story { height:auto; }
+html.mobile #about-root .about-beat { position:relative; inset:auto; opacity:1; gap:20px; }
+html.mobile #about-root .about-beat + .about-beat { margin-top:40px; }
+html.mobile #my-journey-ride .journey-title { left:7vw; top:5%; font-size:24px; transform:none; }
+html.mobile #my-journey-ride .vehicle[data-vehicle='auto'] { width:38vw; max-width:none; }
+html.mobile #my-journey-ride :is(.ride-near,.ride-checkpoints,.ride-hint,.ride-puffs) { display:none; }
+html.mobile #my-journey-ride .ride-mobile-hud { position:absolute; inset:0; z-index:5; pointer-events:none; }
+html.mobile #my-journey-ride .ride-mobile-hud .ride-card {
+  left:50%; top:15%; bottom:auto; transform:translateX(-50%);
+  width:min(86vw,340px); min-height:0; max-height:38svh; overflow-y:auto;
+  padding:18px 20px; gap:9px; pointer-events:auto;
+}
+html.mobile #my-journey-ride .ride-card::after { display:none; }
+html.mobile #my-journey-ride .ride-card h3 { font-size:clamp(19px,5.8vw,25px); }
+html.mobile #my-journey-ride .ride-card-description { font-size:13px; line-height:1.4; }
+html.mobile #my-journey-ride .progress { left:10%; width:80%; bottom:calc(32px + env(safe-area-inset-bottom)); }
+html.mobile #my-journey-ride .ride-progress-dot:not([data-active='true']) span { display:none; }
+html.mobile #my-journey-ride .ride-progress-dot[data-active='true'] span { width:max-content; max-width:50vw; white-space:normal; text-align:center; }
+html.mobile #my-journey-ride .ride-progress-dot:last-child span { left:auto; right:0; transform:none; }
+html.mobile .footer-night {
+  display:flex; flex-direction:column; align-items:center; gap:24px;
+  height:auto; min-height:100vh; min-height:100svh; overflow:visible;
+  padding:40px 20px calc(36px + env(safe-area-inset-bottom));
+}
+html.mobile .footer-night > :is(.footer-model,.footer-name,.footer-taglines,.footer-made,.footer-socials) {
+  position:relative; inset:auto; transform:none; width:100%; max-width:none; margin:0;
+}
+html.mobile .footer-night .footer-model { order:0; width:clamp(300px,100vw,480px); height:auto; aspect-ratio:600/378; flex:none; }
+html.mobile .footer-night .footer-poster { position:static; display:block; width:100%; height:auto; scale:1; object-fit:contain; }
+html.mobile .footer-night .footer-name { order:1; font-size:clamp(40px,12vw,76px); line-height:1; white-space:normal; }
+html.mobile .footer-night .footer-name-word { display:block; }
+html.mobile .footer-night .footer-socials { order:2; flex-wrap:wrap; }
+html.mobile .footer-night .footer-taglines { order:3; display:flex; flex-direction:column; gap:10px; padding:0; text-align:center; }
+html.mobile .footer-night .footer-made { order:4; display:flex; flex-direction:row; flex-wrap:wrap; justify-content:center; gap:8px 12px; padding:0; border:0; text-align:center; content-visibility:visible; }
+html.mobile .footer-night .footer-made-label { flex-basis:auto; }
+html.mobile .footer-night .footer-made-item { font-size:12px; }
+html.mobile #hero-journey .next-content h2 { font-size:clamp(24px,7vw,60px); }
+html.mobile :is(.focus-stage,.tech-night,.footer-night) { height:100vh; height:100svh; min-height:100vh; min-height:100svh; }
+html.mobile #my-journey-ride .journey-stage { height:100vh; height:100svh; min-height:0; }
+html.mobile #my-journey-ride { min-height:100vh; min-height:100svh; }
+html.mobile :is(#film-root,.night-finish,.hero-sky,[data-ride-cloud],.footer-cloud,.projects-cloud,.tech-night-cloud) { display:none; }
+html.mobile :is(.film-stage,.name-letter,.night-star-twinkle,.tech-tile-float) { animation:none !important; transition:none; }
+html.mobile #hero-journey .hero-section::after { display:none; }
+html.mobile :is(.focus-word,.blur-reveal-paragraph span,.word-reveal) { filter:none !important; }
+html.mobile #avatar-root { visibility:hidden; }
+html.mobile body[data-story-badge='visible'] #avatar-root { visibility:visible; }
+@media(prefers-reduced-motion:reduce) {
+  html.mobile #my-journey-ride .journey-stage { height:auto; }
+  html.mobile #my-journey-ride .ride-checkpoints { display:grid; }
+  html.mobile #hero-journey .hero-section { height:auto; min-height:0; }
+  html.mobile #hero-journey .journey-scene { height:100vh; height:100svh; }
+  html.mobile #hero-journey .next-screen { inset:auto; }
+  html.mobile #hero-journey .next-screen { --mobile-headline-opacity:1; }
+}

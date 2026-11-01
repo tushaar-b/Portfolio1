@@ -1,13 +1,14 @@
 import gsap from 'gsap';
 import { SplitText } from 'gsap/SplitText';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
+import { mobileMode, liteMode } from '../../src/mobile-mode';
 gsap.registerPlugin(SplitText,MotionPathPlugin);
 export const ABOUT_MOTION={scrollVh:840,mobileScrollVh:720,scrub:1};
 
 /** Child of the ONE scroll-story master; no pin or ScrollTrigger here. */
 export function buildAboutMotion(root,headline,badge){
  const $=s=>root.querySelector(s),$$=s=>[...root.querySelectorAll(s)];
- const mobile=innerWidth<900,layer=n=>$(`[data-layer="${n}"]`),joint=n=>$(`[data-joint="${n}"]`);
+ const mobile=mobileMode,layer=n=>$(`[data-layer="${n}"]`),joint=n=>$(`[data-joint="${n}"]`);
  const camera=$('.about-character-camera'),rig=$('.about-rig'),bubble=$('.about-bubble');
  const iris=$('.about-iris'),field=$('.about-amber-field'),ring=$('.about-iris-ring');
  const beatA=$('.about-beat-a'),beatB=$('.about-beat-b'),view=$('.about-viewport');
@@ -49,9 +50,9 @@ export function buildAboutMotion(root,headline,badge){
  const rayTurn=gsap.to($('.about-rays'),{rotation:360,duration:100,repeat:-1,ease:'none',paused:true});
  const stamp=gsap.to($('.about-stamp'),{rotation:360,duration:30,repeat:-1,ease:'none',paused:true});
  const wave=gsap.timeline({paused:true,repeat:-1,repeatDelay:6.5}).to($('[data-idle="wave"]'),{attr:{transform:'rotate(-8)'},duration:.3,ease:'sine.inOut'}).to($('[data-idle="wave"]'),{attr:{transform:'rotate(7)'},duration:.3,yoyo:true,repeat:2,ease:'sine.inOut'}).to($('[data-idle="wave"]'),{attr:{transform:'rotate(0)'},duration:.3});
- const blink=()=>{if(disposed)return;if(live)tweens.push(gsap.to(eyes,{scaleY:.06,transformOrigin:'50% 50%',duration:.09,repeat:1,yoyo:true}));blinkTimer=gsap.delayedCall(gsap.utils.random(3,6),blink);};blinkTimer=gsap.delayedCall(4,blink);
+ const blink=()=>{if(disposed||liteMode)return;if(live)tweens.push(gsap.to(eyes,{scaleY:.06,transformOrigin:'50% 50%',duration:.09,repeat:1,yoyo:true}));blinkTimer=gsap.delayedCall(gsap.utils.random(3,6),blink);};if(!liteMode)blinkTimer=gsap.delayedCall(4,blink);
  const gaze={x:0,y:0};const gx=gsap.quickTo(gaze,'x',{duration:.35,ease:'power3.out'}),gy=gsap.quickTo(gaze,'y',{duration:.35,ease:'power3.out'});
- const gazeTick=()=>{if(live)pupils.forEach(p=>{p.style.translate=`${gaze.x}px ${gaze.y}px`;});};gsap.ticker.add(gazeTick);
+ const gazeTick=()=>{if(live)pupils.forEach(p=>{p.style.translate=`${gaze.x}px ${gaze.y}px`;});};if(!liteMode)gsap.ticker.add(gazeTick);
  const tiltState={rotation:0};
  const neckTilt=gsap.quickTo(tiltState,'rotation',{duration:.4,ease:'power3.out',onUpdate:()=>{$('[data-idle="head-tilt"]').setAttribute('transform',`rotate(${tiltState.rotation} 300 363)`);}});
  const point=$('[data-idle="point"]');
@@ -93,7 +94,7 @@ export function buildAboutMotion(root,headline,badge){
  tl.to(camera,{x:()=>innerWidth*.8,duration:1.05,ease:'power2.in'},8.45).to($('.about-exit'),{clipPath:'inset(0% 0 0 0)',duration:.8,ease:'power4.inOut'},8.7).to($('.about-scroll-cue'),{opacity:0,duration:.3},8.6).to(badge,{opacity:1,duration:.25},9.35).to({}, {duration:.1},9.5);
  const sync=(time,active)=>{
   const next=active&&time>=3.8&&time<8.5&&!document.hidden;
-  if(next!==live){live=next;[idle,rayTurn,stamp,wave].forEach(t=>live?t.resume():t.pause());}
+  if(next!==live){live=next;[idle,rayTurn,stamp,wave].forEach(t=>live&&!liteMode?t.resume():t.pause());}
   beatA.inert=time<4.75||time>6.7;beatB.inert=time<6.45||time>8.8;
   $('.about-character-button').disabled=!live;
   const beat=time<4.75?'stage':time<6.45?'a':time<8.7?'b':'exit';

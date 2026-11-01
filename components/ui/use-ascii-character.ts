@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AsciiRaster, GLYPHS } from './ascii-raster';
+import { liteMode, mobileMode } from '../../src/mobile-mode';
 
 export interface AsciiCharacterOptions {
   cellWidth?: number; cellHeight?: number; fontSize?: number; charRamp?: string;
@@ -50,6 +51,7 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
     const rasterContext = raster.getContext('2d', { willReadFrequently: true });
     if (!output || !rasterContext) return;
     const clock = resolveRef.current, motion = matchMedia('(prefers-reduced-motion:reduce)');
+    clock.freezeIdle = liteMode;
     clock.ready = false;
     const renderer = new AsciiRaster();
     const rate = 1000 / Math.min(60, Math.max(1, fps));
@@ -81,6 +83,7 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
     };
     const render = (time: number) => {
       if (!pictureReady || disposed || clock.scroll >= .18) return;
+      if (liteMode && paintedWave === 0) return;
       const phaseChanged = paintedProgress !== clock.progress;
       // Keep the original 30fps raster budget. Compile frames at rest can be
       // reused exactly; a return to zero always paints immediately.
@@ -96,7 +99,7 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
       if (waveFrames.length && (waveIndex !== paintedWave || eyeChanged)) {
         rasterContext.clearRect(0, 0, raster.width, raster.height);
         rasterContext.drawImage(bodyFrame!, 0, 0);
-        rasterContext.drawImage(waveFrames[waveIndex], Math.round(raster.width * 420 / 600), Math.round(raster.height * 110 / 600));
+        rasterContext.drawImage(waveFrames[waveIndex], Math.round(raster.width * (liteMode ? 310 : 420) / 600), Math.round(raster.height * 110 / 600));
         // Draw pupils into the source before glyph matching, in the same SVG space.
         rasterContext.save();
         rasterContext.scale(raster.width / 600, raster.height / 600);
@@ -114,9 +117,9 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
       const shaderTime = clock.progress * 1200;
       renderer.render(raster, output, shaderTime, motion.matches,
         { x: -1000, y: -1000, time: -Infinity },
-        false, false, clock.progress);
+        false, false, liteMode ? 0 : clock.progress);
     };
-    const active = () => clock.scroll < .18 && !motion.matches && visible && !document.hidden;
+    const active = () => !liteMode && clock.scroll < .18 && !motion.matches && visible && !document.hidden;
     const stop = () => { cancelAnimationFrame(frame); frame = 0; clock.running = false; };
     const loop = (time: number) => {
       frame = 0;
@@ -127,7 +130,7 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
       neutralEyes();
       const waveIndex = idle ? Math.floor(time / (1800 / 16)) % 16 : 0;
       const angle = 13 * Math.sin(waveIndex / 16 * Math.PI * 2);
-      hand?.setAttribute('transform', `rotate(${angle} 520 285)`);
+      hand?.setAttribute('transform', `${liteMode ? 'translate(-110 0) ' : ''}rotate(${angle} 520 285)`);
       if (clock.enabled) render(time);
       frame = requestAnimationFrame(loop); clock.running = true;
     };
@@ -170,11 +173,11 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
       });
       const hand = clone.querySelector<SVGElement>('#hand');
       hand?.style.removeProperty('transform');
-      hand?.setAttribute('transform', `rotate(${angle} 520 285)`);
+      hand?.setAttribute('transform', `${liteMode ? 'translate(-110 0) ' : ''}rotate(${angle} 520 285)`);
       if (part === 'body') hand?.remove();
       else if (hand) {
         hand.parentElement!.replaceChildren(hand);
-        clone.setAttribute('viewBox', '420 110 210 250');
+        clone.setAttribute('viewBox', liteMode ? '310 110 210 250' : '420 110 210 250');
         clone.setAttribute('width', String(Math.round(raster.width * 210 / 600)));
         clone.setAttribute('height', String(Math.round(raster.height * 250 / 600)));
       }
@@ -183,11 +186,11 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
     const resize = (force = false) => {
       const nextWidth = container.clientWidth, nextHeight = container.clientHeight;
       if (!nextWidth || !nextHeight) return;
-      const dpr = devicePixelRatio || 1;
+      const dpr = liteMode ? 1 : devicePixelRatio || 1;
       if (!force && nextWidth === width && nextHeight === height && dpr === lastDpr) return;
       width = nextWidth; height = nextHeight; lastDpr = dpr;
       const cap = Math.max(1, Math.sqrt(width * height / (Math.max(3, cellWidth) * Math.max(5, cellHeight) * 20000)));
-      const cw = Math.max(3, cellWidth) * cap, ch = Math.max(5, cellHeight) * cap;
+      const cw = mobileMode ? 9 : Math.max(3, cellWidth) * cap, ch = mobileMode ? 16 : Math.max(5, cellHeight) * cap;
       canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
       raster.width = Math.max(1, Math.round(width * 1.25)); raster.height = Math.max(1, Math.round(height * 1.25));
       renderer.configure(width, height, cw, ch, Math.max(6, fontSize) * cap, dpr, charRamp, colorMode);
@@ -206,7 +209,7 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
       };
       // Cache one body plus sixteen small hand crops, rather than sixteen
       // full-resolution portraits. This avoids hundreds of MB on large screens.
-      void Promise.all([decode(0, 'body'), Promise.all(Array.from({ length: 16 }, (_, index) =>
+      void Promise.all([decode(0, 'body'), Promise.all(Array.from({ length: liteMode ? 1 : 16 }, (_, index) =>
         decode(13 * Math.sin(index / 16 * Math.PI * 2), 'hand')))]).then(([body, frames]) => {
         if (disposed || version !== generation) return;
         bodyFrame = body; waveFrames = frames; paintedWave = -1;
@@ -226,7 +229,7 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
     const sync = () => clock.update(clock.scroll);
     const hero = container.closest('.hero-section')!;
     const move = (event: PointerEvent) => {
-      if (clock.scroll > 0 || motion.matches || event.pointerType === 'touch') return;
+      if (liteMode || clock.scroll > 0 || motion.matches || event.pointerType === 'touch') return;
       const matrix = svg.getScreenCTM();
       if (!matrix) return;
       const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
@@ -243,7 +246,7 @@ export function useAsciiCharacter({ cellWidth = 5, cellHeight = 9, fontSize = 9,
     hero.addEventListener('pointerleave', leave);
     motion.addEventListener('change', sync);
     visibility(); resize(); clock.measure();
-    document.fonts.ready.then(() => { if (!disposed) resize(true); });
+    document.fonts.ready.then(() => { if (!disposed && !mobileMode) resize(true); });
     return () => {
       disposed = true; stop(); resizeObserver.disconnect(); intersection.disconnect();
       document.removeEventListener('visibilitychange', sync);

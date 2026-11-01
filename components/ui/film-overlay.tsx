@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from 'react';
+import { liteMode } from '../../src/mobile-mode';
 
 export function FilmOverlay({ intensity = .6 }: { intensity?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (liteMode) return;
     const overlay = ref.current, stage = document.querySelector<HTMLElement>('.hero-section');
     const root = document.getElementById('film-root');
     if (!overlay || !stage) return;

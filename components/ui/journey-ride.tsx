@@ -6,11 +6,12 @@ import {checkpoints as defaultCheckpoints,type JourneyCheckpoint} from './journe
 import {JourneyVehicleArt,type JourneyVehicle} from './journey-vehicle';
 import {NightStars,NightCloud,NightLamp,NightHills,NightRoad,NightFinish} from './night-scenery';
 import './journey-ride.css';
+import { mobileMode } from '../../src/mobile-mode';
 gsap.registerPlugin(ScrollTrigger);
 
 // Scroll distances are viewport heights. No per-checkpoint timing is hard-coded.
 export const INTRO=60,TRAVEL=80,DWELL=60,OUTRO=60;
-export const MOBILE_TRAVEL=75*(80/90),MOBILE_DWELL=55*(60/70),SNAP=true;
+export const MOBILE_TRAVEL=70,MOBILE_DWELL=50,SNAP=true;
 export function journeySchedule(count:number,mobile=false){
   const travel=mobile?MOBILE_TRAVEL:TRAVEL,dwell=mobile?MOBILE_DWELL:DWELL;
   return {travel,dwell,total:INTRO+count*(travel+dwell)+OUTRO};
@@ -43,7 +44,7 @@ export function JourneyRide({vehicle='auto',checkpoints=defaultCheckpoints}:{veh
   const ctx=gsap.context(()=>{
    const mm=gsap.matchMedia();
    mm.add({mobile:'(max-width:639px)',desktop:'(min-width:640px)',reduce:'(prefers-reduced-motion:reduce)'},media=>{
-    const mobile=!!media.conditions!.mobile,reduced=!!media.conditions!.reduce;
+    const mobile=mobileMode,reduced=!!media.conditions!.reduce;
     const $=<T extends Element=HTMLElement>(s:string)=>root.querySelector<T>(s)!;
     const $$=<T extends Element=HTMLElement>(s:string)=>Array.from(root.querySelectorAll<T>(s));
     const cards=$$('.ride-card'),items=$$('.ride-checkpoint');
@@ -53,6 +54,48 @@ export function JourneyRide({vehicle='auto',checkpoints=defaultCheckpoints}:{veh
      root.dataset.motion='reduced';
      sceneReady('ride');
      return()=>{observer.disconnect();gsap.killTweensOf(cards);delete root.dataset.motion;};
+    }
+    if (mobile) {
+      const stage = $('.journey-stage'), world = $('.world'), vehicleNode = $('.vehicle');
+      const hud = document.createElement('div'); hud.className = 'ride-mobile-hud'; stage.append(hud);
+      const homes = cards.map(card => ({ card, parent: card.parentElement! }));
+      cards.forEach(card => hud.append(card));
+      const dots = $$('.ride-progress-dot'), road = $<SVGPathElement>('[data-road-path]');
+      const wheels = $$<SVGGElement>('.ride-wheel');
+      const state = { distance: 0 };
+      const timeline = gsap.timeline({ paused: true });
+      const measure = () => {
+        const w = stage.clientWidth, h = stage.clientHeight;
+        world.style.width = `${w * (checkpoints.length + 2)}px`;
+        $$<SVGSVGElement>('.world > svg').forEach(svg => svg.setAttribute('viewBox', `0 0 ${w * (checkpoints.length + 2)} ${h}`));
+        road.setAttribute('d', `M0 ${h * .62}H${w * (checkpoints.length + 2)}`);
+        $<SVGPathElement>('[data-hills]').setAttribute('d', `M0 ${h*.7}Q${w} ${h*.5} ${w*2} ${h*.7}H${w*(checkpoints.length+2)}V${h}H0Z`);
+        gsap.set(vehicleNode, { left: w * .3, xPercent: -50, y: h * .62 - vehicleNode.clientWidth * 218 / 360 });
+      };
+      measure();
+      gsap.set(cards, { autoAlpha: 0, y: 12, x: 0, xPercent: -50 });
+      checkpoints.forEach((_, i) => {
+        const at = i * 120 + MOBILE_TRAVEL;
+        timeline.to(state, { distance: i + 1, duration: MOBILE_TRAVEL, ease: 'none' }, i * 120)
+          .to(cards[i], { autoAlpha: 1, y: 0, duration: 6 }, at)
+          .to(cards[i], { autoAlpha: 0, y: -10, duration: 5 }, at + MOBILE_DWELL - 5);
+      });
+      const render = () => {
+        const time = timeline.time(), index = Math.min(checkpoints.length - 1, Math.floor(time / 120));
+        gsap.set(world, { x: -state.distance * stage.clientWidth * .8 });
+        wheels.forEach(wheel => gsap.set(wheel, { rotation: state.distance * 360, svgOrigin: wheel.dataset.pivot }));
+        cards.forEach((card, i) => { card.inert = i !== index || time % 120 < MOBILE_TRAVEL; });
+        dots.forEach((dot, i) => { dot.dataset.active = String(i === index); dot.dataset.visited = String(i < index); });
+        $('.progress').setAttribute('aria-valuenow', String(Math.round(timeline.progress() * 100)));
+      };
+      timeline.eventCallback('onUpdate', render);
+      const trigger = ScrollTrigger.create({ id: 'journey-ride', trigger: root, animation: timeline,
+        start: 'top top', end: () => `+=${stage.clientHeight * checkpoints.length * 1.2}`,
+        pin: stage, pinType: 'transform', pinSpacing: true, scrub: true, invalidateOnRefresh: true,
+        onRefreshInit: measure, onRefresh: render,
+        onToggle: self => { world.style.willChange = self.isActive ? 'transform' : ''; } });
+      render(); sceneReady('ride');
+      return () => { trigger.kill(); homes.forEach(({ card, parent }) => { parent.append(card); card.inert = false; }); hud.remove(); world.style.removeProperty('will-change'); };
     }
     const stage=$('.journey-stage'),world=$('.world'),far=$('.ride-far'),mid=$('.ride-mid');
     const title=$('.journey-title'),hint=$('.ride-hint'),arrow=$('.ride-hint span');
@@ -231,7 +274,7 @@ export function JourneyRide({vehicle='auto',checkpoints=defaultCheckpoints}:{veh
     };
     const visibility=()=>{root.dataset.paused=String(document.hidden);if(!document.hidden)render();};
     window.addEventListener('keydown',key,true);document.addEventListener('visibilitychange',visibility);
-    const fonts=()=>{if(!disposed)ScrollTrigger.refresh();};document.fonts.ready.then(fonts);
+    const fonts=()=>{if(!disposed&&!document.documentElement.classList.contains('mobile'))ScrollTrigger.refresh();};document.fonts.ready.then(fonts);
     render();root.dataset.motion='ride';
     sceneReady('ride');
     return()=>{window.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);control.current=null;delete(root as any).__ride;delete root.dataset.motion;delete root.dataset.parked;delete root.dataset.traveling;};

@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      window.__MOBILE__ = matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+      document.documentElement.classList.toggle('mobile', window.__MOBILE__);
+    </script>
     <title>Tushaar Bharara | Web Developer &amp; AI Projects</title>
     <meta name="description" content="Explore Tushaar Bharara's portfolio: web development, AI and machine learning, and robotics projects. CSE (Data Science) student at VIT Vellore." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -25,7 +29,8 @@
       {"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://tushaarbportfolio.vercel.app/#person","name":"Tushaar Bharara","url":"https://tushaarbportfolio.vercel.app/","jobTitle":"Aspiring Web Developer","sameAs":["https://www.linkedin.com/in/tushaarbharara","https://github.com/tushaar-b"],"knowsAbout":["Web Development","React","Python","Machine Learning","Robotics"],"affiliation":{"@type":"CollegeOrUniversity","name":"VIT Vellore"}},{"@type":"WebSite","@id":"https://tushaarbportfolio.vercel.app/#website","url":"https://tushaarbportfolio.vercel.app/","name":"Tushaar Bharara — Portfolio","inLanguage":"en","author":{"@id":"https://tushaarbportfolio.vercel.app/#person"}},{"@type":"ProfilePage","@id":"https://tushaarbportfolio.vercel.app/#profile","url":"https://tushaarbportfolio.vercel.app/","name":"Tushaar Bharara | Web Developer & AI Projects","mainEntity":{"@id":"https://tushaarbportfolio.vercel.app/#person"}}]}
     </script>
     <style>
-      html.site-booting{background:#52497F;overflow:hidden}
+      html,body{background:#12172B}
+      html.site-booting{background:#12172B;overflow:hidden}
       html.site-booting :is(#app,#video-footer-root,#avatar-root,#film-root){visibility:hidden}
       html.site-enhanced #hero-journey:not([data-story-ready]) :is(.next-screen,#about-root){visibility:hidden}
     </style>

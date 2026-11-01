@@ -1,9 +1,11 @@
 import { useLayoutEffect, type RefObject } from 'react';
+import { mobileMode, liteMode } from '../../src/mobile-mode';
 import { sceneReady } from '../../src/scroll-ready';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { buildAboutMotion, ABOUT_MOTION } from './about-motion';
 import type { AsciiClock } from './use-ascii-character';
+import { mobileHeroJourney } from './mobile-hero-journey';
 gsap.registerPlugin(ScrollTrigger);
 
 const marks = ['CSS', 'JS', 'TS', 'REACT', 'NODE', 'SQL', 'GIT', 'FIGMA', 'HTML', 'AI', 'PY'];
@@ -62,12 +64,14 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
     const boot = () => {
       if (disposed) return;
       const hero = ref.current?.closest<HTMLElement>('.stage'), journey = hero?.closest<HTMLElement>('.journey');
-      const about = hero?.querySelector<HTMLElement>('#about'), badge = document.querySelector<HTMLElement>('#avatar-badge');
+      const about = mobileMode ? document.querySelector<HTMLElement>('#about') : hero?.querySelector<HTMLElement>('#about'), badge = document.querySelector<HTMLElement>('#avatar-badge');
       if (!hero || !journey || !about || !badge) { frame = requestAnimationFrame(boot); return; }
       ctx = gsap.context(() => {
         const mm = gsap.matchMedia();
         mm.add({ mobile: '(max-width:899px)', desktop: '(min-width:900px)', reduced: '(prefers-reduced-motion:reduce)' }, media => {
-          const { mobile, reduced } = media.conditions!;
+          const { reduced } = media.conditions!;
+          const mobile = mobileMode;
+          if (mobile && !reduced) return mobileHeroJourney(hero, journey, resolve.current);
           const scene = hero.querySelector<HTMLElement>('.journey-scene')!;
           const camera = hero.querySelector<HTMLElement>('#zoom-layer') || hero.querySelector<HTMLElement>('.journey-camera')!;
           const headline = hero.querySelector<HTMLElement>('.next-screen')!;
@@ -83,7 +87,7 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
           const openingGlow = svg.querySelector('#head-opening-glow');
           const rimShadow = svg.querySelector('#head-rim-shadow');
           const tiles = hero.querySelector<HTMLElement>('.tiles')!;
-          const chrome = hero.querySelectorAll('.hero-nav,.hero-name,.hero-subtitle,.hero-sky,.hero-scroll,.hero-ruler,.experiment-toggle');
+          const chrome = hero.querySelectorAll('.hero-nav,.hero-name,.hero-subtitle,.hero-sky,.hero-scroll,.hero-ruler,.experiment-toggle,#hero-social-root');
           const eyebrow = headline.querySelector<HTMLElement>('.next-content > p');
           const cta = headline.querySelector<HTMLElement>('.next-content > a');
 
@@ -130,7 +134,7 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
           gsap.set(lidLayer, { opacity:0 });
 
           gsap.set([scene, camera], { opacity: 1, visibility: 'visible', x: 0, y: 0, scale: 1 });
-          gsap.set(chrome, { opacity: 1, x: 0, y: 0 });
+          gsap.set(chrome, { autoAlpha: 1, x: 0, y: 0 });
           gsap.set(headline, { opacity: 0, visibility: 'hidden', clipPath: 'none' });
           gsap.set(lids, { x: 0, y: 0, rotation: 0, transformOrigin: '50% 100%' });
           if (openingGlow) gsap.set(openingGlow, { opacity: 0 });
@@ -267,6 +271,7 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
                 rasterProgress = nextRasterProgress;
               }
               headline.inert = t < TEXT_START || t > ABOUT_START + .85;
+              chrome.forEach(element => { (element as HTMLElement).inert = t > (mobile ? 0 : DIVE_START); });
               scene.inert = t > DIVE_START;
 
               // Keep scene visible during the dive so no blank frames occur
@@ -277,7 +282,7 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
 
               // Tile hover belongs to the same scroll clock, so reverse visits
               // identical offsets rather than replaying an independent idle clock.
-              const floatTime = resolve.current.freezeIdle ? 0 : Math.max(0, Math.min(2, t - 1.35));
+              const floatTime = liteMode || resolve.current.freezeIdle ? 0 : Math.max(0, Math.min(2, t - 1.35));
               tileFloats.pause().time(floatTime);
 
               // Scroll-owned ring travel: reverse retraces exactly, including the
@@ -318,7 +323,7 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
 
           // A single neutral, function-based opening pivot survives refresh/reverse.
           gsap.set(camera,{transformOrigin:()=>{const c=geometry();return `${c.x}px ${c.y}px`;}});
-          master.to(chrome,{opacity:0,y:-20,duration:.6,ease:'power2.in'},DIVE_START);
+          master.to(chrome,{autoAlpha:0,y:-20,duration:.6,ease:'power2.in'},mobile ? 0 : DIVE_START);
           master.to(camera,{scale:24,transformOrigin:()=>{const c=geometry();return `${c.x}px ${c.y}px`;},
             duration:DIVE_END-DIVE_START,ease:'power2.inOut'},DIVE_START);
           nodeItems.forEach(({node},i)=>{
@@ -364,7 +369,7 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
             trigger: journey,
             animation: master,
             start: 'top top',
-            end: () => `+=${(innerHeight * (mobile ? ABOUT_MOTION.mobileScrollVh : ABOUT_MOTION.scrollVh)) / 100 * master.duration() / (2.9 + aboutMotion.timeline.duration())}`,
+            end: () => `+=${((mobile ? hero.clientHeight : innerHeight) * (mobile ? ABOUT_MOTION.mobileScrollVh : ABOUT_MOTION.scrollVh)) / 100 * master.duration() / (2.9 + aboutMotion.timeline.duration())}`,
             pin: hero,
             pinType: 'transform',
             pinSpacing: true,
@@ -389,13 +394,14 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
             lidLayer.remove();
             delete (about as any).__aboutMotion;
             scene.inert = false;
+            chrome.forEach(element => { (element as HTMLElement).inert = false; });
             headline.inert = false;
             scene.style.removeProperty('visibility');
             delete document.body.dataset.storyBadge;
           };
         });
       }, hero);
-      ScrollTrigger.refresh();
+      if (!mobileMode) ScrollTrigger.refresh();
       journey.dataset.storyReady = 'true';
       sceneReady('hero');
     };
@@ -406,6 +412,7 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
 
     let resizeTimer: ReturnType<typeof setTimeout>;
     const resize = () => {
+      if (mobileMode) return;
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
         if (!disposed) {
@@ -415,11 +422,19 @@ export function useHeroJourney(ref: RefObject<HTMLDivElement | null>, resolve: R
       }, 220);
     };
     window.addEventListener('resize', resize);
+    const orient = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!disposed) { gsap.matchMediaRefresh(); ScrollTrigger.refresh(); }
+      }, 300);
+    };
+    window.addEventListener('orientationchange', orient);
     return () => {
       disposed = true;
       cancelAnimationFrame(frame);
       clearTimeout(resizeTimer);
       window.removeEventListener('resize', resize);
+      window.removeEventListener('orientationchange', orient);
       ctx?.revert();
     };
   }, [ref, resolve]);

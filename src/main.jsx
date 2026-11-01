@@ -16,6 +16,10 @@ import { WavingCharacter } from '../components/ui/waving-character.tsx';
 import { HeroSocialRail } from '../components/ui/hero-social-rail.tsx';
 import './hero-visuals.css';
 import { scrollScenesReady } from './scroll-ready';
+import { mobileMode, liteMode } from './mobile-mode';
+
+ScrollTrigger.config({ ignoreMobileResize: true });
+if (mobileMode) ScrollTrigger.config({ autoRefreshEvents: 'none' });
 
 const projectsDetailOnLoad = location.pathname.replace(/\/$/, '') === '/projects' || location.hash === '#project-details';
 const projectsReturnOnLoad = !projectsDetailOnLoad && (location.hash === '#projects' || sessionStorage.getItem('returnTo') === 'projects');
@@ -34,12 +38,20 @@ const avatarRoot = document.getElementById('avatar-root') || document.body.appen
 const characterRoot = document.getElementById('character-root');
 const heroSocialRoot = document.getElementById('hero-social-root');
 if (heroSocialRoot) createAppRoot(heroSocialRoot).render(<HeroSocialRail />);
+const menu = document.querySelector('.hero-menu');
+if (menu) {
+  const menuSocialRoot = document.createElement('div');
+  menuSocialRoot.className = 'hero-menu-socials';
+  menu.append(menuSocialRoot);
+  createAppRoot(menuSocialRoot).render(<HeroSocialRail />);
+}
 if (characterRoot) {
   createAppRoot(characterRoot).render(<React.StrictMode><WavingCharacter size="100%" className="hero-character" /></React.StrictMode>);
 }
 
 
 const aboutRoot = document.getElementById('about-root');
+if (mobileMode && aboutRoot) document.getElementById('hero-journey')?.after(aboutRoot);
 if (aboutRoot) createAppRoot(aboutRoot).render(<React.StrictMode><AboutStage /></React.StrictMode>);
 
 // ─── Render MY JOURNEY section ───────────────────────────────────────────────
@@ -112,7 +124,15 @@ if (videoFooterRoot) {
 }
 
 // ─── Lenis Smooth Scroll ───────────────────────────────────────────────────
-const lenis = new Lenis({
+const lenis = mobileMode ? {
+  options: { smoothWheel: false },
+  scrollTo(target, options = {}) {
+    const element = typeof target === 'string' ? document.querySelector(target) : target;
+    const top = typeof element === 'number' ? element : element ? element.getBoundingClientRect().top + window.scrollY : 0;
+    window.scrollTo({ top, behavior: options.immediate ? 'instant' : 'smooth' });
+  },
+  resize() {}, raf() {}, on() {}, off() {}, destroy() {},
+} : new Lenis({
   duration: 1.2,
   easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
   smoothWheel: true,
@@ -129,7 +149,7 @@ const handleAnchorClick = event => {
   if (!target) return;
   event.preventDefault();
   const story = ScrollTrigger.getById('hero-journey');
-  const destination = href === '#about' && story?.animation && !reducedMotion.matches
+  const destination = !mobileMode && href === '#about' && story?.animation && !reducedMotion.matches
     ? story.start + (story.end - story.start) * story.animation.labels['beat-a'] / story.animation.duration()
     : target;
   lenis.scrollTo(destination, { duration: 1.2, force: true });
@@ -186,7 +206,7 @@ scrollScenesReady().then(async () => {
     const hash = location.hash;
     const anchor = hash && !projectsDetailOnLoad ? document.getElementById(hash.slice(1)) : null;
     const story = ScrollTrigger.getById('hero-journey');
-    const destination = hash === '#about' && story?.animation && !matchMedia('(prefers-reduced-motion: reduce)').matches
+    const destination = !mobileMode && hash === '#about' && story?.animation && !matchMedia('(prefers-reduced-motion: reduce)').matches
       ? story.start + (story.end - story.start) * story.animation.labels['beat-a'] / story.animation.duration()
       : anchor || (projectsDetailOnLoad ? 0 : window.__portfolioBoot?.scrollY || 0);
     lenis.scrollTo(destination, { immediate: true, force: true });
@@ -228,10 +248,10 @@ window.addEventListener('journey-contact', sayHi);
 
 lenis.on('scroll', ScrollTrigger.update);
 const rafLenis = time => lenis.raf(time * 1000);
-gsap.ticker.add(rafLenis);
+if (!mobileMode) gsap.ticker.add(rafLenis);
 gsap.ticker.lagSmoothing(0);
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const syncScrollMotion = () => { lenis.options.smoothWheel = !reducedMotion.matches; };
+const syncScrollMotion = () => { lenis.options.smoothWheel = !mobileMode && !reducedMotion.matches; };
 reducedMotion.addEventListener('change', syncScrollMotion);
 syncScrollMotion();
 
@@ -246,6 +266,7 @@ window.addEventListener('scroll', () => {
 
 // ─── Interactive Particle Text — Manifesto Section ──────────────────────────
 const initManifestoParticles = () => {
+  if (liteMode) return;
   const section       = document.querySelector('.manifesto-section');
   const textContainer = section?.querySelector('.about-content');
   if (!section) return;
@@ -473,6 +494,7 @@ const initManifestoParticles = () => {
 
 // ─── Cinematic Blur Text Animation (About Me paragraphs) ────────────────────
 const initBlurTextAnimation = () => {
+  if (liteMode) return;
   const paragraphs = document.querySelectorAll('.blur-reveal-paragraph');
   if (paragraphs.length === 0) return;
 
@@ -694,12 +716,12 @@ if (hero) {
     });
   });
   const sky = hero.querySelector('.hero-sky');
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; !liteMode && i < 25; i++) {
     const star = document.createElement('i'); star.className = 'hero-star';
     star.style.cssText = `left:${4 + (i * 37 % 92)}%;top:${35 + (i * 19 % 54)}%;animation-delay:${i * -.47}s`;
     sky.appendChild(star);
   }
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; !liteMode && i < 6; i++) {
     const bird = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     bird.setAttribute('viewBox', '0 0 28 16'); bird.classList.add('hero-bird');
     bird.style.cssText = `left:${7 + i * 5}%;top:${55 + i % 3 * 7}%;animation-delay:${-i * 2}s`;

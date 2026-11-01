@@ -4,6 +4,7 @@ import { NightStars, NightCloud, NightFinish } from './night-scenery';
 import { SocialIcon } from './hero-social-rail';
 import { socials } from '../../src/socials';
 import './video-footer.css';
+import { liteMode, mobileMode } from '../../src/mobile-mode';
 
 export const VideoFooter = () => {
   const ref = useRef<HTMLElement>(null);
@@ -22,9 +23,9 @@ export const VideoFooter = () => {
     return () => observer.disconnect();
   }, []);
   useEffect(() => {
-    if (!nearby || !canvasRef.current) return;
+    if (mobileMode || !nearby || !canvasRef.current) return;
     const device = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
-    const lite = new URLSearchParams(location.search).get('lite') === '1' || device.connection?.saveData || ((device.deviceMemory ?? 8) <= 2) || ((device.hardwareConcurrency || 8) <= 2);
+    const lite = liteMode || device.connection?.saveData || ((device.deviceMemory ?? 8) <= 2) || ((device.hardwareConcurrency || 8) <= 2);
     let cancelled = false;
     let dispose: (() => void) | undefined;
     if (!lite) import('./footer-scene.js').then(({ initFooter3D }) => {
@@ -57,8 +58,8 @@ export const VideoFooter = () => {
       initial={reduced ? false : { opacity: 0, scale: .96 }} animate={shown ? { opacity: 1, scale: 1 } : { opacity: 0, scale: .96 }}
       transition={{ duration: reduced ? 0 : .8, delay: reduced ? 0 : 1, ease: [0.215, .61, .355, 1] }}
       onAnimationComplete={() => { if (shown && canvasRef.current) canvasRef.current.dataset.monitor = 'on'; }}>
-      {nearby && <img className={`footer-poster${sceneReady ? ' is-hidden' : ''}`} src={poster} srcSet="/assets/footer-poster-600.webp 600w, /assets/footer-poster.webp 1200w" sizes="(max-width: 639px) 100vw, 72vw" alt="" width="1200" height="756" loading="lazy" decoding="async"/>}
-      <canvas ref={canvasRef} id="footer-canvas" className={sceneReady ? 'is-ready' : ''} data-reduced-motion={String(reduced)} />
+      {(mobileMode || nearby) && <img className={`footer-poster${sceneReady ? ' is-hidden' : ''}`} src={mobileMode ? '/assets/footer-poster-600.webp' : poster} srcSet={mobileMode ? '/assets/footer-poster-600.webp 600w' : '/assets/footer-poster-600.webp 600w, /assets/footer-poster.webp 1200w'} sizes={mobileMode ? 'min(100vw, 480px)' : '(max-width: 639px) 100vw, 72vw'} alt="Character working at a desk" width="1200" height="756" loading="lazy" decoding="async"/>}
+      {!mobileMode && <canvas ref={canvasRef} id="footer-canvas" className={sceneReady ? 'is-ready' : ''} data-reduced-motion={String(reduced)} />}
     </motion.div>
     <div className="footer-made"><span className="footer-made-label">Website made using:</span>{['React', 'Vite', 'Framer Motion', 'Three.js', 'Lenis Scroll'].map(item => <span className="footer-made-item" key={item}>{item}</span>)}</div>
     <nav className="footer-socials" aria-label="Footer social links">{socials.map(social => <a key={social.id} href={social.href}
